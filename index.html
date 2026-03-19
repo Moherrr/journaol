@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<!-- v2026-03-19-FINAL -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Trade Log">
+<meta name="theme-color" content="#d8d4cc">
+<title>Trade Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist+Mono:wght@400;500&family=Geist:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:      #d8d4cc;
+    --bg2:     #edeae3;
+    --bg3:     #e8e4dd;
+    --bg4:     #dedad2;
+    --border:  rgba(0,0,0,0.08);
+    --border2: rgba(0,0,0,0.15);
+    --text:    #1a1814;
+    --muted:   #8a8278;
+    --faint:   #b5b0a8;
+    --accent:  #2d6a4f;
+    --accent2: #1b4332;
+    --red:     #c0392b;
+    --amber:   #b7791f;
+    --blue:    #1a4e8f;
+    --mono:    'Geist Mono', monospace;
+    --sans:    'Geist', sans-serif;
+    --serif:   'Instrument Serif', serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    min-height: 100vh;
+    padding: 32px;
+    padding-top: max(32px, env(safe-area-inset-top));
+    padding-bottom: max(32px, env(safe-area-inset-bottom));
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .2em;
+    color: var(--faint);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .logo span { color: var(--accent); }
+  h1 {
+    font-family: var(--serif);
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -.01em;
+    color: var(--text);
+    font-style: italic;
+  }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
+
+  /* ── STATS ── */
+  .stats { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; margin-bottom: 28px; background: var(--border); border-radius: 12px; overflow: hidden; }
+  .stat { background: var(--bg2); padding: 18px 20px; }
+  .stat:first-child { border-radius: 12px 0 0 12px; }
+  .stat:last-child { border-radius: 0 12px 12px 0; }
+  .stat-label { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; font-family: var(--mono); }
+  .stat-value { font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--text); }
+  .stat-value.green { color: var(--accent); }
+  .stat-value.red { color: var(--red); }
+  .stat-value.amber { color: var(--amber); }
+
+  /* ── CHART ── */
+  .chart-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    height: 72px;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .chart-bar { flex: 1; max-width: 24px; border-radius: 2px 2px 0 0; min-height: 2px; opacity: .85; }
+
+  /* ── FORM ── */
+  .form-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+  }
+  .form-section h2 {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    margin-bottom: 20px;
+    font-family: var(--mono);
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 9px; color: var(--faint); letter-spacing: .1em; text-transform: uppercase; font-family: var(--mono); }
+  .field input, .field select, .field textarea {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color .15s, background .15s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--border2);
+    background: var(--bg2);
+  }
+  .field input:disabled { opacity: .4; cursor: not-allowed; }
+  .field textarea { resize: vertical; min-height: 70px; font-size: 13px; line-height: 1.5; }
+  .field select { cursor: pointer; }
+
+  /* ── TABS ── */
+  .tab-group { margin-top: 22px; }
+  .tab-bar { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .tab-btn {
+    font-size: 11px;
+    font-family: var(--mono);
+    background: transparent;
+    border: none;
+    color: var(--faint);
+    padding: 8px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all .15s;
+    letter-spacing: .04em;
+  }
+  .tab-btn.active { color: var(--text); border-bottom-color: var(--text); }
+  .tab-btn:hover:not(.active) { color: var(--muted); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── PILLS ── */
+  .pill-group { display: flex; flex-wrap: wrap; gap: 7px; }
+  .pill-inp { display: none; }
+  .pill-lbl {
+    font-size: 12px;
+    font-family: var(--mono);
+    padding: 6px 13px;
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all .12s;
+    white-space: nowrap;
+    user-select: none;
+    background: var(--bg3);
+  }
+  .pill-inp:checked + .pill-lbl {
+    background: var(--text);
+    border-color: var(--text);
+    color: var(--bg);
+  }
+
+  /* ── BIAS ── */
+  .bias-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .bias-label { font-size: 11px; color: var(--muted); min-width: 80px; font-family: var(--mono); }
+  .bias-opts { display: flex; gap: 5px; }
+  .bias-radio { display: none; }
+  .bias-opt {
+    font-size: 12px;
+    font-family: var(--mono);
+    padding: 7px 14px;
+    border: 1px solid var(--border2);
+    border-radius: 7px;
+    cursor: pointer;
+    color: var(--muted);
+    background: var(--bg3);
+    transition: all .12s;
+    user-select: none;
+  }
+  .bias-radio:checked + .bias-opt { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+  /* ── TRADE TYPE ── */
+  .trade-type-row { display: flex; gap: 8px; }
+  .tt-radio { display: none; }
+  .tt-opt {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-family: var(--mono);
+    padding: 11px 14px;
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
+    background: var(--bg3);
+    transition: all .12s;
+    user-select: none;
+  }
+  .tt-radio:checked + .tt-opt { background: var(--text); border-color: var(--text); color: var(--bg); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all .15s;
+    letter-spacing: .03em;
+  }
+  .btn-primary { background: var(--text); color: var(--bg); }
+  .btn-primary:hover { background: #2d2a25; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+  .btn-ghost:hover { border-color: var(--text); color: var(--text); background: var(--bg3); }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(192,57,43,.2); font-size: 11px; padding: 6px 12px; }
+  .btn-danger:hover { background: rgba(192,57,43,.06); }
+  .form-actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
+  .form-error { font-size: 11px; color: var(--red); font-family: var(--mono); display: none; }
+  .field input.error, .field select.error { border-color: var(--red) !important; background: rgba(192,57,43,.04); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .table-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: var(--bg2);
+  }
+  .table-header h2 {
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: .14em;
+    font-family: var(--mono);
+  }
+
+  /* ── FILTER TABS ── */
+  .filter-tabs { display: flex; gap: 4px; }
+  .ftab {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .12s;
+    letter-spacing: .03em;
+  }
+  .ftab.active { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .ftab:hover:not(.active) { color: var(--text); border-color: var(--border2); background: var(--bg3); }
+  .ftab2 {
+    font-size: 10px;
+    font-family: var(--mono);
+    padding: 3px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .12s;
+    letter-spacing: .03em;
+  }
+  .ftab2.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .ftab2:hover:not(.active) { color: var(--text); background: var(--bg3); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    text-align: left;
+    font-size: 9px;
+    font-weight: 500;
+    color: var(--faint);
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    background: var(--bg);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr.clickable-row { cursor: pointer; }
+  tr.clickable-row:hover td { background: var(--bg3); }
+  .mono { font-family: var(--mono); }
+
+  /* ── PILLS IN TABLE ── */
+  .rp {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    letter-spacing: .04em;
+  }
+  .rp-W { background: rgba(45,106,79,.1); color: var(--accent); border: 1px solid rgba(45,106,79,.2); }
+  .rp-L { background: rgba(192,57,43,.08); color: var(--red); border: 1px solid rgba(192,57,43,.18); }
+  .rp-BE { background: var(--bg3); color: var(--muted); border: 1px solid var(--border2); }
+  .rp-Long { background: rgba(26,78,143,.08); color: var(--blue); border: 1px solid rgba(26,78,143,.18); }
+  .rp-Short { background: rgba(183,121,31,.08); color: var(--amber); border: 1px solid rgba(183,121,31,.18); }
+  .rp-SMR { background: rgba(45,106,79,.08); color: var(--accent); border: 1px solid rgba(45,106,79,.18); }
+  .rp-Cont { background: rgba(183,121,31,.08); color: var(--amber); border: 1px solid rgba(183,121,31,.18); }
+
+  .tag-wrap { display: flex; flex-wrap: wrap; gap: 3px; }
+  .tag {
+    font-size: 9px;
+    font-family: var(--mono);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── SWAP BUTTON ── */
+
+
+  .empty-state { text-align: center; padding: 52px; color: var(--faint); font-size: 13px; font-family: var(--mono); }
+
+  /* ── EXPORT ── */
+
+
+  /* ── MODAL ── */
+  .modal-bg {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,24,20,.45);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.12);
+  }
+  .modal h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    font-style: italic;
+    margin-bottom: 22px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text);
+  }
+  .modal h3 button { background: none; border: none; color: var(--faint); font-size: 18px; cursor: pointer; font-family: var(--sans); }
+  .modal h3 button:hover { color: var(--text); }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 22px; justify-content: flex-end; }
+  .modal-section { margin-top: 16px; }
+  .modal-section-label { font-size: 9px; color: var(--faint); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; font-family: var(--mono); }
+
+
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+  @media (max-width: 900px) { .stats { grid-template-columns: repeat(5, 1fr); } body { padding: 16px; } }
+  @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: 1fr 1fr; } }
+</style></style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="logo" style="display:flex;gap:12px;align-items:center">
+      <span><span style="color:var(--accent)">NQ</span> · trade journal</span>
+      <span id="sync-status" style="font-size:10px;color:var(--faint);font-family:var(--mono)">loading...</span>
+    </div>
+    <h1>My Journal</h1>
+  </div>
+  <div class="header-actions"></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-label">Trades</div><div class="stat-value" id="s-count">0</div></div>
+  <div class="stat"><div class="stat-label">Win rate</div><div class="stat-value" id="s-wr">—</div></div>
+  <div class="stat"><div class="stat-label">Avg R</div><div class="stat-value" id="s-avg">—</div></div>
+  <div class="stat"><div class="stat-label">Total R</div><div class="stat-value" id="s-total">—</div></div>
+  <div class="stat"><div class="stat-label">Max DD</div><div class="stat-value" id="s-dd">—</div></div>
+  <div class="stat"><div class="stat-label">Cur loss streak</div><div class="stat-value" id="s-streak">—</div></div>
+  <div class="stat"><div class="stat-label">Max loss streak</div><div class="stat-value" id="s-max-streak">—</div></div>
+  <div class="stat"><div class="stat-label">Cur win streak</div><div class="stat-value" id="s-win-streak">—</div></div>
+  <div class="stat"><div class="stat-label">Max win streak</div><div class="stat-value" id="s-max-win-streak">—</div></div>
+</div>
+
+<div class="chart-wrap" id="eqChart"></div>
+
+<div class="form-section">
+  <h2>Log trade</h2>
+
+  <!-- ROW 1: basic fields -->
+  <div class="form-grid">
+    <div class="field">
+      <label>Date</label>
+      <input type="date" id="f-date">
+    </div>
+    <div class="field">
+      <label>Entry time (ET)</label>
+      <input type="time" id="f-time" placeholder="e.g. 10:58">
+    </div>
+    <div class="field">
+      <label>Result</label>
+      <select id="f-type" onchange="typeChanged()">
+        <option value="W">Win</option>
+        <option value="L">Loss</option>
+        <option value="BE">Breakeven</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>R won</label>
+      <input type="number" id="f-r" value="4" step="0.1" min="0.1">
+    </div>
+    <div class="field">
+      <label>Direction</label>
+      <select id="f-dir">
+        <option value="Long">Long</option>
+        <option value="Short">Short</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Points gained/lost</label>
+      <input type="number" id="f-pts" step="0.25" placeholder="e.g. 80">
+    </div>
+    <div class="field">
+      <label>Stop size (pts)</label>
+      <input type="number" id="f-sl" step="0.25" placeholder="e.g. 20">
+    </div>
+  </div>
+
+  <!-- Location + Fractal outside grid so they match confluence pill size -->
+  <div style="margin-top:16px">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);font-weight:500;margin-bottom:8px">Entry location in range</div>
+    <div class="pill-group">
+      <input type="radio" class="pill-inp" name="location" id="loc-disc" value="Discount"><label class="pill-lbl" for="loc-disc">Discount</label>
+      <input type="radio" class="pill-inp" name="location" id="loc-ext" value="Extreme continuation"><label class="pill-lbl" for="loc-ext">Extreme continuation</label>
+    </div>
+  </div>
+  <div style="margin-top:14px">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);font-weight:500;margin-bottom:8px">Fractal confluence</div>
+    <div class="pill-group">
+      <input type="radio" class="pill-inp" name="fractal" id="frac-yes" value="With fractal"><label class="pill-lbl" for="frac-yes">Fractal</label>
+      <input type="radio" class="pill-inp" name="fractal" id="frac-no" value="No fractal"><label class="pill-lbl" for="frac-no">No fractal</label>
+    </div>
+  </div>
+  <div style="display:none"><!-- dummy to close grid -->
+  </div>
+
+  <!-- TABS -->
+  <div class="tab-group" style="margin-top:20px">
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('confs',this)">Confluences</button>
+      <button class="tab-btn" onclick="switchTab('trade-type',this)">Trade type</button>
+      <button class="tab-btn" onclick="switchTab('bias',this)">Bias</button>
+      <button class="tab-btn" onclick="switchTab('notes',this)">Notes</button>
+    </div>
+
+    <!-- TAB: Confluences -->
+    <div class="tab-panel active" id="tab-confs">
+      <div id="confGrid" class="pill-group"></div>
+    </div>
+
+    <!-- TAB: Trade type -->
+    <div class="tab-panel" id="tab-trade-type">
+      <div class="field">
+        <label style="margin-bottom:8px">Type of trade</label>
+        <div class="trade-type-row">
+          <input type="radio" class="tt-radio" name="tradetype" id="tt-smr" value="SMR">
+          <label class="tt-opt" for="tt-smr">SMR — Smart Money Reversal</label>
+          <input type="radio" class="tt-radio" name="tradetype" id="tt-cont" value="Continuation">
+          <label class="tt-opt" for="tt-cont">Continuation</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Bias -->
+    <div class="tab-panel" id="tab-bias">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="bias-row">
+          <span class="bias-label">Daily bias</span>
+          <div class="bias-opts">
+            <input type="radio" class="bias-radio" name="daily" id="d-with" value="With"><label class="bias-opt" for="d-with">With daily</label>
+            <input type="radio" class="bias-radio" name="daily" id="d-against" value="Against"><label class="bias-opt" for="d-against">Against daily</label>
+            <input type="radio" class="bias-radio" name="daily" id="d-na" value="N/A"><label class="bias-opt" for="d-na">N/A</label>
+          </div>
+        </div>
+        <div class="bias-row">
+          <span class="bias-label">Weekly bias</span>
+          <div class="bias-opts">
+            <input type="radio" class="bias-radio" name="weekly" id="w-with" value="With"><label class="bias-opt" for="w-with">With weekly</label>
+            <input type="radio" class="bias-radio" name="weekly" id="w-against" value="Against"><label class="bias-opt" for="w-against">Against weekly</label>
+            <input type="radio" class="bias-radio" name="weekly" id="w-na" value="N/A"><label class="bias-opt" for="w-na">N/A</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Notes -->
+    <div class="tab-panel" id="tab-notes">
+      <div class="field" style="margin-top:4px">
+        <label>Notes</label>
+        <textarea id="f-notes" placeholder="What happened, why you took it, what you noticed..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- SSMT CONTEXT -->
+  <div id="ssmt-context" style="margin-top:18px;display:none">
+    <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">SSMT context</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="field">
+        <label style="margin-bottom:6px">Entry SSMT — triggered this trade</label>
+        <div class="pill-group"><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-Micro_SSMT" value="Micro SSMT"><label class="pill-lbl" for="ssmt-entry-Micro_SSMT">Micro SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-Micro_SSMT_Hidden" value="Micro SSMT Hidden"><label class="pill-lbl" for="ssmt-entry-Micro_SSMT_Hidden">Micro SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-90m_SSMT" value="90m SSMT"><label class="pill-lbl" for="ssmt-entry-90m_SSMT">90m SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-90m_SSMT_Hidden" value="90m SSMT Hidden"><label class="pill-lbl" for="ssmt-entry-90m_SSMT_Hidden">90m SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-DC_SSMT" value="DC SSMT"><label class="pill-lbl" for="ssmt-entry-DC_SSMT">DC SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-DC_SSMT_Hidden" value="DC SSMT Hidden"><label class="pill-lbl" for="ssmt-entry-DC_SSMT_Hidden">DC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-WC_SSMT" value="WC SSMT"><label class="pill-lbl" for="ssmt-entry-WC_SSMT">WC SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-WC_SSMT_Hidden" value="WC SSMT Hidden"><label class="pill-lbl" for="ssmt-entry-WC_SSMT_Hidden">WC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-Monthly_SSMT" value="Monthly SSMT"><label class="pill-lbl" for="ssmt-entry-Monthly_SSMT">Monthly SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-entry" id="ssmt-entry-Monthly_SSMT_Hidden" value="Monthly SSMT Hidden"><label class="pill-lbl" for="ssmt-entry-Monthly_SSMT_Hidden">Monthly SSMT Hidden</label></div>
+      </div>
+      <div class="field">
+        <label style="margin-bottom:6px">Active SSMTs — already in market / distributing</label>
+        <div class="pill-group"><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-Micro_SSMT" value="Micro SSMT"><label class="pill-lbl" for="ssmt-active-Micro_SSMT">Micro SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-Micro_SSMT_Hidden" value="Micro SSMT Hidden"><label class="pill-lbl" for="ssmt-active-Micro_SSMT_Hidden">Micro SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-90m_SSMT" value="90m SSMT"><label class="pill-lbl" for="ssmt-active-90m_SSMT">90m SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-90m_SSMT_Hidden" value="90m SSMT Hidden"><label class="pill-lbl" for="ssmt-active-90m_SSMT_Hidden">90m SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-DC_SSMT" value="DC SSMT"><label class="pill-lbl" for="ssmt-active-DC_SSMT">DC SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-DC_SSMT_Hidden" value="DC SSMT Hidden"><label class="pill-lbl" for="ssmt-active-DC_SSMT_Hidden">DC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-WC_SSMT" value="WC SSMT"><label class="pill-lbl" for="ssmt-active-WC_SSMT">WC SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-WC_SSMT_Hidden" value="WC SSMT Hidden"><label class="pill-lbl" for="ssmt-active-WC_SSMT_Hidden">WC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-Monthly_SSMT" value="Monthly SSMT"><label class="pill-lbl" for="ssmt-active-Monthly_SSMT">Monthly SSMT</label><input type="checkbox" class="pill-inp" name="ssmt-active" id="ssmt-active-Monthly_SSMT_Hidden" value="Monthly SSMT Hidden"><label class="pill-lbl" for="ssmt-active-Monthly_SSMT_Hidden">Monthly SSMT Hidden</label></div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="form-actions">
+    <button class="btn btn-primary" onclick="addTrade()">Add trade</button>
+    <span class="form-error" id="form-error"></span>
+    <button class="btn btn-ghost" onclick="resetForm()">Reset</button>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <div class="table-header">
+    <div style="display:flex;align-items:center;gap:12px">
+      <h2>Trade history</h2>
+      <span style="font-size:12px;color:var(--muted)" id="trade-count-label">0 trades</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
+      <div class="filter-tabs">
+        <button class="ftab active" onclick="setFilter('type','all',this)">All</button>
+        <button class="ftab" onclick="setFilter('type','SMR',this)">SMR</button>
+        <button class="ftab" onclick="setFilter('type','Continuation',this)">Continuation</button>
+      </div>
+      <div class="filter-tabs">
+        <button class="ftab active" id="tf-all" onclick="setTimeFilter('all',this)">All times</button>
+        <button class="ftab" onclick="setTimeFilter('09:30-09:45',this)">9:30–9:45</button>
+        <button class="ftab" onclick="setTimeFilter('09:45-10:00',this)">9:45–10:00</button>
+        <button class="ftab" onclick="setTimeFilter('10:00-10:30',this)">10:00–10:30</button>
+        <button class="ftab" onclick="setTimeFilter('10:30-11:00',this)">10:30–11:00</button>
+        <button class="ftab" onclick="setTimeFilter('11:00-12:00',this)">11:00–12:00</button>
+        <button class="ftab" onclick="setTimeFilter('12:00+',this)">12:00+</button>
+      </div>
+      <div class="filter-tabs">
+        <button class="ftab2 active" onclick="setFilter('entry','all',this)">All entries</button>
+        <button class="ftab2" onclick="setFilter('entry','1m CISD',this)">1m CISD</button>
+        <button class="ftab2" onclick="setFilter('entry','15s CISD',this)">15s CISD</button>
+        <button class="ftab2" onclick="setFilter('entry','10-point reaction',this)">Reaction</button>
+      </div>
+      <div class="filter-tabs" style="flex-wrap:wrap;justify-content:flex-end;max-width:600px">
+        <button class="ftab2 active" id="cf-all" onclick="setConfFilter('all',this)">All confs</button>
+        <button class="ftab2" onclick="setConfFilter('1m SD',this)">1m SD</button>
+        <button class="ftab2" onclick="setConfFilter('5m SD',this)">5m SD</button>
+        <button class="ftab2" onclick="setConfFilter('15m SD',this)">15m SD</button>
+        <button class="ftab2" onclick="setConfFilter('1m PSP',this)">1m PSP</button>
+        <button class="ftab2" onclick="setConfFilter('5m PSP',this)">5m PSP</button>
+        <button class="ftab2" onclick="setConfFilter('15m PSP',this)">15m PSP</button>
+        <button class="ftab2" onclick="setConfFilter('1m PRC',this)">1m PRC</button>
+        <button class="ftab2" onclick="setConfFilter('5m PRC',this)">5m PRC</button>
+        <button class="ftab2" onclick="setConfFilter('15m PRC',this)">15m PRC</button>
+        <button class="ftab2" onclick="setConfFilter('1m SMTF',this)">1m SMTF</button>
+        <button class="ftab2" onclick="setConfFilter('5m SMTF',this)">5m SMTF</button>
+        <button class="ftab2" onclick="setConfFilter('15m SMTF',this)">15m SMTF</button>
+        <button class="ftab2" onclick="setConfFilter('Fractal',this)">Fractal</button>
+      </div>
+    </div>
+  </div>
+  <div id="tableInner"><div class="empty-state">No trades logged yet</div></div>
+</div>
+
+</div>
+
+<div style="position:fixed;bottom:16px;right:16px;display:flex;gap:6px;z-index:50">
+  <button onclick="exportJSON()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Export JSON</button>
+  <button onclick="document.getElementById('importFile').click()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Import JSON</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+</div>
+
+<script>
+const SUPABASE_URL = '';
+const SUPABASE_KEY = '';
+const DB_ID = 'global'; // single shared row storing all trades
+
+let trades = [];
+let _syncing = false; // kept for compat but no longer blocks saves
+
+// ── SUPABASE HELPERS ──
+async function sbFetch(method, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/trades?id=eq.${DB_ID}`, {
+    method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=minimal' : 'return=minimal',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return res;
+}
+
+function loadFromCloud() {
+  trades = JSON.parse(localStorage.getItem('nq_journal_v2') || '[]');
+  sortTrades();
+  showSyncStatus('saved');
+  render();
+}
+
+function saveToCloud() {
+  localStorage.setItem('nq_journal_v2', JSON.stringify(trades));
+  showSyncStatus('saved');
+}
+
+function showSyncStatus(status) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  const map = {
+    'loading...': ['⟳', '#b5b0a8'],
+    'saving...':  ['⟳', '#b7791f'],
+    'synced':     ['✓', '#2d6a4f'],
+    'offline':    ['✗', '#c0392b'],
+    'error':      ['✗', '#c0392b'],
+  };
+  const [icon, color] = map[status] || ['?', '#b5b0a8'];
+  el.textContent = icon + ' ' + status;
+  el.style.color = color;
+}
+
+// load on start
+loadFromCloud();
+
+// ── CONFLUENCES ──
+// Each SSMT type has Regular + Hidden variant
+const CONF_SECTIONS = {
+  'Cracks in correlation': ['1m SD', '5m SD', '15m SD', '1m PSP', '5m PSP', '15m PSP', '1m PRC', '5m PRC', '15m PRC', '1m SMTF', '5m SMTF', '15m SMTF'],
+  'Entry': ['1m CISD', '15s CISD', '10-point reaction'],
+};
+
+const grid = document.getElementById('confGrid');
+Object.entries(CONF_SECTIONS).forEach(([section, items]) => {
+  const sec = document.createElement('div');
+  sec.style.cssText = 'width:100%;margin-top:10px';
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-family:var(--mono);font-weight:500';
+  lbl.textContent = section;
+  sec.appendChild(lbl);
+  const row = document.createElement('div');
+  row.className = 'pill-group';
+  items.forEach(c => {
+    const id = 'c-' + c.replace(/\s+/g,'_');
+    const inp = document.createElement('input');
+    inp.type = 'checkbox'; inp.className = 'pill-inp'; inp.id = id; inp.value = c;
+    const lbl2 = document.createElement('label');
+    lbl2.htmlFor = id; lbl2.className = 'pill-lbl'; lbl2.textContent = c;
+    row.appendChild(inp); row.appendChild(lbl2);
+  });
+  sec.appendChild(row);
+  grid.appendChild(sec);
+});
+
+// TxO sub-selector — shown only when 10-point reaction is checked
+const tprCheckbox = document.getElementById('c-10-point_reaction');
+const txoWrap = document.createElement('div');
+txoWrap.id = 'txo-wrap';
+txoWrap.style.cssText = 'width:100%;margin-top:10px;display:none';
+txoWrap.innerHTML = `
+  <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;font-family:var(--mono)">Which true open?</div>
+  <div class="pill-group" id="txo-group">
+    ${['TDO','TNY','TMSO','True Asia','True PM'].map(t => {
+      const id2 = 'txo-'+t.replace(/\s+/g,'_');
+      return `<input type="radio" class="pill-inp" name="txo" id="${id2}" value="${t}"><label class="pill-lbl" for="${id2}">${t}</label>`;
+    }).join('')}
+  </div>`;
+grid.appendChild(txoWrap);
+
+tprCheckbox.addEventListener('change', () => {
+  txoWrap.style.display = tprCheckbox.checked ? 'block' : 'none';
+  if (!tprCheckbox.checked) {
+    document.querySelectorAll('input[name="txo"]').forEach(r => r.checked = false);
+  }
+});
+
+// ── TABS ──
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+  const ctx = document.getElementById('ssmt-context');
+  if (ctx) ctx.style.display = id === 'confs' ? 'block' : 'none';
+}
+
+// ── DATE ──
+document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+
+// ── TYPE CHANGE ──
+function typeChanged() {
+  const t = document.getElementById('f-type').value;
+  const rEl = document.getElementById('f-r');
+  if (t === 'L') { rEl.value = 1; rEl.disabled = true; }
+  else if (t === 'BE') { rEl.value = 0; rEl.disabled = true; }
+  else { rEl.disabled = false; rEl.value = 4; }
+}
+
+function getConfs() {
+  const confs = [...document.querySelectorAll('.pill-inp:checked')].map(e => e.value);
+  const txo = document.querySelector('input[name="txo"]:checked');
+  if (txo) confs.push('TxO: ' + txo.value);
+  return confs;
+}
+function getTradeType() {
+  const el = document.querySelector('input[name="tradetype"]:checked');
+  return el ? el.value : '';
+}
+function getDaily() {
+  const el = document.querySelector('input[name="daily"]:checked');
+  return el ? el.value : '';
+}
+function getWeekly() {
+  const el = document.querySelector('input[name="weekly"]:checked');
+  return el ? el.value : '';
+}
+function getLocation() {
+  const el = document.querySelector('input[name="location"]:checked');
+  return el ? el.value : '';
+}
+function getFractal() {
+  const el = document.querySelector('input[name="fractal"]:checked');
+  return el ? el.value : '';
+}
+function getSsmtEntry() {
+  const els = [...document.querySelectorAll('input[name="ssmt-entry"]:checked')];
+  return els.map(e => e.value);
+}
+function getSsmtActive() {
+  return [...document.querySelectorAll('input[name="ssmt-active"]:checked')].map(e => e.value);
+}
+
+function rValue(t) {
+  if (t.type === 'BE') return 0;
+  if (t.type === 'L')  return -1;
+  return +(t.r || 4);
+}
+
+function showError(msg) {
+  const el = document.getElementById('form-error');
+  el.textContent = msg;
+  el.style.display = 'inline';
+  setTimeout(() => el.style.display = 'none', 3000);
+}
+
+function clearErrors() {
+  document.querySelectorAll('.field input.error, .field select.error').forEach(e => e.classList.remove('error'));
+  document.getElementById('form-error').style.display = 'none';
+}
+
+function addTrade() {
+  clearErrors();
+  const errors = [];
+
+  const dateEl = document.getElementById('f-date');
+  const timeEl = document.getElementById('f-time');
+  const ptsEl  = document.getElementById('f-pts');
+  const slEl   = document.getElementById('f-sl');
+
+  if (!dateEl.value) { dateEl.classList.add('error'); errors.push('date'); }
+  if (!timeEl.value) { timeEl.classList.add('error'); errors.push('entry time'); }
+  if (!ptsEl.value)  { ptsEl.classList.add('error');  errors.push('points'); }
+  if (!slEl.value)   { slEl.classList.add('error');   errors.push('stop size'); }
+  if (!getDaily())     errors.push('daily bias');
+  if (!getWeekly())    errors.push('weekly bias');
+  if (!getLocation())  errors.push('entry location');
+  if (!getFractal())   errors.push('fractal');
+
+  if (errors.length > 0) {
+    showError('Missing: ' + errors.join(', '));
+    return;
+  }
+
+  // soft confirm for optional fields
+  const softMissing = [];
+  if (!getTradeType()) softMissing.push('trade type (SMR/Continuation)');
+  if (getSsmtEntry().length === 0) softMissing.push('entry SSMT');
+  if (getConfs().filter(c => !['1m CISD','15s CISD','10-point reaction'].includes(c) && !c.startsWith('TxO')).length === 0) softMissing.push('cracks in correlation');
+  if (softMissing.length > 0) {
+    if (!confirm('No ' + softMissing.join(' and no ') + ' selected — are you sure you want to add this trade?')) return;
+  }
+
+  const type = document.getElementById('f-type').value;
+  const r = type === 'W' ? (parseFloat(document.getElementById('f-r').value) || 4)
+          : type === 'L' ? 1 : 0;
+  trades.push({
+    id: Date.now(),
+    date: dateEl.value,
+    time: timeEl.value,
+    type, r,
+    dir:        document.getElementById('f-dir').value,
+    pts:        parseFloat(ptsEl.value) || null,
+    sl:         parseFloat(slEl.value)  || null,
+    confs:      getConfs(),
+    tradeType:  getTradeType(),
+    daily:      getDaily(),
+    weekly:     getWeekly(),
+    location:   getLocation(),
+    fractal:    getFractal(),
+    ssmtEntry:  getSsmtEntry(),
+    ssmtActive: getSsmtActive(),
+    notes:      document.getElementById('f-notes').value.trim(),
+  });
+  save(); render(); resetForm();
+}
+
+function removeTrade(id) {
+  trades = trades.filter(t => t.id !== id);
+  save(); render();
+}
+
+function resetForm() {
+  document.getElementById('f-type').value = 'W';
+  document.getElementById('f-r').value = 4;
+  document.getElementById('f-r').disabled = false;
+  document.getElementById('f-dir').value = 'Long';
+  document.getElementById('f-pts').value = '';
+  document.getElementById('f-sl').value = '';
+  document.getElementById('f-notes').value = '';
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-time').value = '';
+  document.querySelectorAll('.pill-inp, .tt-radio, .bias-radio, input[name="location"], input[name="fractal"], input[name="ssmt-entry"], input[name="ssmt-active"]').forEach(e => e.checked = false);
+  document.querySelectorAll('input[name="txo"]').forEach(e => e.checked = false);
+  const txoW = document.getElementById('txo-wrap');
+  if (txoW) txoW.style.display = 'none';
+}
+
+function save() {
+  saveToCloud();
+}
+
+// ── AUTO-BACKUP every even trade count ──
+// Triggers on trade 2, 4, 6, 8... regardless of reloads.
+// Uses trades.length so the count survives page refreshes.
+function autoBackup() {
+  if (trades.length > 0 && trades.length % 10 === 0) {
+    triggerBackup(true);
+  }
+}
+
+function triggerBackup(silent) {
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    totalTrades: trades.length,
+    note: "This file contains all your trade journal data. It is plain JSON — any AI assistant or developer can read and restore it even without the original app. Each trade object contains: date, time, type (W/L/BE), r, dir, pts, sl, tradeType, ssmtEntry, ssmtActive, confs, location, fractal, daily, weekly, notes.",
+    trades: trades
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  // always same filename so it overwrites in Downloads — no spam
+  a.download = 'trade_journal_backup.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  if (!silent) {
+    const btn = event && event.target;
+    if (btn) { btn.textContent = 'Backed up!'; setTimeout(() => btn.textContent = 'Backup JSON', 1500); }
+  }
+}
+
+function exportJSON() {
+  triggerBackup(false);
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      // handle both raw array and wrapped format {trades: [...]}
+      const data = Array.isArray(parsed) ? parsed : (parsed.trades && Array.isArray(parsed.trades) ? parsed.trades : null);
+      if (!data) { alert('Invalid backup file.'); return; }
+      if (!confirm('This will REPLACE all current trades with the backup (' + data.length + ' trades). Continue?')) return;
+      trades = data;
+      save();
+      render();
+      alert('Restored ' + trades.length + ' trades.');
+    } catch(err) {
+      alert('Could not read file: ' + err.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function clearAll() {
+  if (!confirm('Delete all trades? Cannot be undone.')) return;
+  trades = []; save(); render();
+}
+
+function exportCSV() {
+  const h = 'date,time,result,direction,trade_type,R,points,stop_pts,daily_bias,weekly_bias,location,fractal,ssmt_entry,ssmt_active,confluences,notes';
+  const rows = trades.map(t =>
+    [t.date, t.time||'', t.type, t.dir, t.tradeType||'', rValue(t), t.pts??'', t.sl??'',
+     t.daily||'', t.weekly||'', t.location||'', t.fractal||'', t.ssmtEntry||'', '"'+(t.ssmtActive||[]).join(';')+'"',
+     '"'+(t.confs||[]).join(';')+'"',
+     '"'+(t.notes||'').replace(/"/g,'""')+'"'
+    ].join(',')
+  );
+  const blob = new Blob([h+'\n'+rows.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'trades_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+
+let activeFilter = 'all';
+let activeEntryFilter = 'all';
+let activeConfFilter = 'all';
+let activeTimeFilter = 'all';
+
+function setFilter(filterType, val, btn) {
+  if (filterType === 'type') {
+    activeFilter = val;
+    document.querySelectorAll('.ftab:not(#cf-all):not([onclick*="setConfFilter"])').forEach(b => b.classList.remove('active'));
+  } else {
+    activeEntryFilter = val;
+    document.querySelectorAll('.ftab2').forEach(b => b.classList.remove('active'));
+  }
+  btn.classList.add('active');
+  render();
+}
+
+function setConfFilter(val, btn) {
+  activeConfFilter = val;
+  document.querySelectorAll('#cf-all, [onclick*="setConfFilter"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function setTimeFilter(val, btn) {
+  activeTimeFilter = val;
+  document.querySelectorAll('[onclick*="setTimeFilter"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function tradeInTimeSlot(t, slot) {
+  if (!t.time) return true;
+  const [h, m] = t.time.split(':').map(Number);
+  const mins = h * 60 + m;
+  const ranges = {
+    '09:30-09:45': [570, 585],
+    '09:45-10:00': [585, 600],
+    '10:00-10:30': [600, 630],
+    '10:30-11:00': [630, 660],
+    '11:00-12:00': [660, 720],
+    '12:00+':      [720, 9999],
+  };
+  const [lo, hi] = ranges[slot] || [0, 9999];
+  return mins >= lo && mins < hi;
+}
+
+function sortTrades() {
+  trades.sort((a, b) => {
+    const da = (a.date || '') + 'T' + (a.time || '00:00');
+    const db = (b.date || '') + 'T' + (b.time || '00:00');
+    if (da !== db) return da < db ? -1 : 1;
+    return (a.id < b.id) ? -1 : (a.id > b.id) ? 1 : 0;
+  });
+}
+
+function render() {
+  sortTrades();
+  let filtered = activeFilter === 'all' ? trades : trades.filter(t => t.tradeType === activeFilter);
+  if (activeEntryFilter !== 'all') filtered = filtered.filter(t => (t.confs||[]).includes(activeEntryFilter));
+  if (activeConfFilter === 'Fractal') filtered = filtered.filter(t => t.fractal === 'With fractal');
+  else if (activeConfFilter !== 'all') filtered = filtered.filter(t => (t.confs||[]).includes(activeConfFilter));
+  if (activeTimeFilter !== 'all') filtered = filtered.filter(t => tradeInTimeSlot(t, activeTimeFilter));
+  const n = filtered.length;
+  const parts = [];
+  if (activeFilter !== 'all') parts.push(activeFilter);
+  if (activeEntryFilter !== 'all') parts.push(activeEntryFilter);
+  const filterLabel = parts.length ? ` (${parts.join(' · ')})` : '';
+  document.getElementById('trade-count-label').textContent = n + ' trade'+(n!==1?'s':'')+filterLabel;
+  const rv = filtered.map(rValue);
+  const cum = []; let run=0; for(const v of rv){run+=v;cum.push(run);}
+  document.getElementById('s-count').textContent = n;
+  ['s-wr','s-avg','s-total','s-dd','s-streak','s-max-streak','s-win-streak','s-max-win-streak'].forEach(id => {
+    document.getElementById(id).textContent='—';
+    document.getElementById(id).className='stat-value';
+  });
+  if (n > 0) {
+    const wr = rv.filter(v=>v>0).length/n;
+    const winRv = rv.filter(v=>v>0);
+    const avg = winRv.length > 0 ? winRv.reduce((a,b)=>a+b,0)/winRv.length : 0;
+    const tot = rv.reduce((a,b)=>a+b,0);
+    let pk=0,dd=0,r2=0; for(const v of rv){r2+=v;if(r2>pk)pk=r2;if(pk-r2>dd)dd=pk-r2;}
+    // BE = transparent, skip it entirely for all streak calculations
+    // use filtered trades (from confluence/type filter) for streak stats
+    const tradesNoB = filtered.filter(t=>t.type!=='BE');
+    // current active loss streak (backwards from latest, skipping BE)
+    let ls=0;
+    for(let i=tradesNoB.length-1;i>=0;i--){
+      if(tradesNoB[i].type==='L'){ls++;}else{break;}
+    }
+    // max ever loss streak (skipping BE)
+    let maxLs=0,curLs=0;
+    for(const t of tradesNoB){
+      if(t.type==='L'){curLs++;maxLs=Math.max(maxLs,curLs);}else{curLs=0;}
+    }
+    // current win streak (backwards from latest, skipping BE)
+    let ws=0;
+    for(let i=tradesNoB.length-1;i>=0;i--){
+      if(tradesNoB[i].type==='W'){ws++;}else{break;}
+    }
+    // max ever win streak (skipping BE)
+    let maxWs=0,curWs=0;
+    for(const t of tradesNoB){
+      if(t.type==='W'){curWs++;maxWs=Math.max(maxWs,curWs);}else{curWs=0;}
+    }
+    const set=(id,v,c)=>{document.getElementById(id).textContent=v;document.getElementById(id).className='stat-value'+(c?' '+c:'');};
+    set('s-wr',(wr*100).toFixed(1)+'%',wr>=0.2?'green':'red');
+    set('s-avg',(avg>=0?'+':'')+avg.toFixed(2)+'R',avg>0?'green':avg<0?'red':'');
+    set('s-total',(tot>=0?'+':'')+tot.toFixed(2)+'R',tot>0?'green':tot<0?'red':'');
+    set('s-dd','-'+dd.toFixed(2)+'R','red');
+    set('s-streak',ls,ls>=5?'red':ls>=3?'amber':'');
+    set('s-max-streak',maxLs,maxLs>=5?'red':maxLs>=3?'amber':'');
+    set('s-win-streak',ws,ws>=3?'green':'');
+    set('s-max-win-streak',maxWs,maxWs>=5?'green':maxWs>=3?'green':'');
+  }
+
+  // chart
+  const chart = document.getElementById('eqChart');
+  if (cum.length) {
+    const mn=Math.min(0,...cum), mx=Math.max(0.01,...cum), range=mx-mn||1;
+    chart.innerHTML = cum.map(v=>`<div class="chart-bar" style="background:${v>=0?'#22c55e':'#ef4444'};height:${Math.max(2,((v-mn)/range)*72)}px"></div>`).join('');
+  } else {
+    chart.innerHTML='<div style="width:100%;text-align:center;color:var(--muted);font-size:12px;align-self:center">No data yet</div>';
+  }
+
+  // table
+  const inner = document.getElementById('tableInner');
+  if (!n) { inner.innerHTML='<div class="empty-state">No trades for this filter</div>'; }
+  else {
+    // cumR always based on full trades order for accuracy
+    const cumMap = {};
+    let _cum = 0;
+    trades.forEach(t => { _cum += rValue(t); cumMap[t.id] = _cum; });
+    const displayList = [...filtered].reverse();
+    const rows = displayList.map((t,i)=>{
+      const v=rValue(t); const cumR=cumMap[t.id];
+      const rc=v>0?'var(--accent)':v<0?'var(--red)':'var(--muted)';
+      const cc=cumMap[t.id]>0?'var(--accent)':cumMap[t.id]<0?'var(--red)':'var(--muted)';
+      const tags=(t.confs||[]).map(c=>`<span class="tag">${c}</span>`).join('');
+      const tt=t.tradeType?`<span class="rp rp-${t.tradeType==='SMR'?'SMR':'Cont'}">${t.tradeType}</span>`:'';
+      const db=t.daily?`<span style="font-size:10px;color:var(--muted)">${t.daily} D</span>`:'';
+      const wb=t.weekly?`<span style="font-size:10px;color:var(--muted)">${t.weekly} W</span>`:'';
+      return `<tr class="clickable-row" data-id="${t.id}" onclick="handleRowClick(${t.id})">
+        <td class="mono" style="color:var(--muted)">${i+1}</td>
+        <td class="mono" style="font-size:11px">${t.date||'—'}</td>
+        <td class="mono" style="font-size:11px;color:var(--muted)">${t.time||'—'}</td>
+        <td><span class="rp rp-${t.dir}">${t.dir}</span></td>
+        <td><span class="rp rp-${t.type}">${t.type==='BE'?'BE':t.type==='W'?'Win':'Loss'}</span></td>
+        <td>${tt||'<span style="font-size:10px;color:var(--faint);font-family:var(--mono)">—</span>'}</td>
+        <td class="mono" style="color:${rc};font-weight:500">${v>0?'+':''}${v.toFixed(2)}R</td>
+        <td class="mono" style="color:var(--muted)">${t.pts!=null?(t.pts>0?'+':'')+t.pts+' pts':'—'}</td>
+        <td class="mono" style="color:var(--muted)">${t.sl!=null?t.sl+' pts':'—'}</td>
+        <td>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);white-space:nowrap">${t.daily ? t.daily+' D' : '—'}</div>
+          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);white-space:nowrap;margin-top:2px">${t.weekly ? t.weekly+' W' : ''}</div>
+        </td>
+        <td><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.location||'—'}</span></td>
+        <td><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.fractal==='With fractal'?'Yes':t.fractal==='No fractal'?'No':'—'}</span></td>
+        <td><span style="font-size:10px;color:var(--accent);font-family:var(--mono)">${Array.isArray(t.ssmtEntry)?t.ssmtEntry.join(', '):t.ssmtEntry||'—'}</span></td>
+        <td><div class="tag-wrap">${(t.ssmtActive||[]).map(s=>`<span class="tag">${s}</span>`).join('')||'<span style="font-size:10px;color:var(--muted)">—</span>'}</div></td>
+        <td>
+          <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:3px">
+            ${['1m CISD','15s CISD','10-point reaction'].filter(e=>(t.confs||[]).includes(e)).map(e=>`<span style="font-size:9px;font-family:var(--mono);background:rgba(45,106,79,.08);border:1px solid rgba(45,106,79,.18);color:var(--accent);padding:1px 6px;border-radius:4px">${e}</span>`).join('')||''}
+          </div>
+          <div class="tag-wrap">${tags||'<span style="color:var(--muted);font-size:10px">—</span>'}</div>
+        </td>
+        <td class="mono" style="color:${cc};font-size:11px">${cumR>=0?'+':''}${cumR.toFixed(2)}R</td>
+        <td onclick="event.stopPropagation()">
+          <button onclick="event.stopPropagation();confirmDelete(${t.id})"
+            style="background:transparent;border:1px solid rgba(192,57,43,.25);border-radius:5px;color:var(--red);font-size:11px;padding:2px 8px;cursor:pointer;font-family:var(--mono)"
+            onmouseover="this.style.background='rgba(192,57,43,.08)'"
+            onmouseout="this.style.background='transparent'">✕</button>
+        </td>
+      </tr>`;
+    }).join('');
+    inner.innerHTML=`<table><thead><tr><th>#</th><th>Date</th><th>Time</th><th>Dir</th><th>Result</th><th>Type</th><th>R</th><th>Points</th><th>Stop</th><th>Bias</th><th>Location</th><th>Fractal</th><th>Entry SSMT</th><th>Active SSMTs</th><th>Confluences</th><th>Cum R</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  }
+
+}
+
+// ── EDIT MODAL ──
+let editingId = null;
+
+function openEdit(id) {
+  const t = trades.find(t => t.id === id);
+  if (!t) return;
+  editingId = id;
+
+  document.getElementById('m-date').value = t.date || '';
+  document.getElementById('m-time').value = t.time || '';
+  document.getElementById('m-type').value = t.type;
+  document.getElementById('m-r').value = t.r;
+  document.getElementById('m-r').disabled = t.type !== 'W';
+  document.getElementById('m-dir').value = t.dir;
+  document.getElementById('m-pts').value = t.pts || '';
+  document.getElementById('m-sl').value = t.sl || '';
+  document.getElementById('m-notes').value = t.notes || '';
+
+  // radio fields
+  const setRadio = (name, val) => {
+    document.querySelectorAll(`input[name="${name}"]`).forEach(r => r.checked = r.value === val);
+  };
+  setRadio('m-tradetype', t.tradeType || '');
+  setRadio('m-daily', t.daily || '');
+  setRadio('m-weekly', t.weekly || '');
+  setRadio('m-location', t.location || '');
+  setRadio('m-fractal', t.fractal || '');
+
+  // ssmt entry (may be array or legacy string)
+  const ssmtEntryArr = Array.isArray(t.ssmtEntry) ? t.ssmtEntry : (t.ssmtEntry ? [t.ssmtEntry] : []);
+  document.querySelectorAll('input[name="m-ssmt-entry"]').forEach(r => { r.checked = ssmtEntryArr.includes(r.value); r._wasChecked = r.checked; });
+  // ssmt active
+  document.querySelectorAll('input[name="m-ssmt-active"]').forEach(r => r.checked = (t.ssmtActive||[]).includes(r.value));
+  // confs (cracks in correlation)
+  const confVals = (t.confs||[]);
+  document.querySelectorAll('input[name="m-confs"]').forEach(r => r.checked = confVals.includes(r.value));
+  // entry (1m CISD etc)
+  document.querySelectorAll('input[name="m-entry"]').forEach(r => r.checked = confVals.includes(r.value));
+
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('editModal').style.display = 'none';
+  editingId = null;
+}
+
+function mTypeChanged() {
+  const t = document.getElementById('m-type').value;
+  const rEl = document.getElementById('m-r');
+  if (t === 'L') { rEl.value = 1; rEl.disabled = true; }
+  else if (t === 'BE') { rEl.value = 0; rEl.disabled = true; }
+  else { rEl.disabled = false; }
+}
+
+function saveModal() {
+  const idx = trades.findIndex(t => t.id === editingId);
+  if (idx === -1) return;
+  const type = document.getElementById('m-type').value;
+  const r = type === 'W' ? (parseFloat(document.getElementById('m-r').value) || 4) : type === 'L' ? 1 : 0;
+  const getR = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ''; };
+  const mSsmtEntry = [...document.querySelectorAll('input[name="m-ssmt-entry"]:checked')].map(e => e.value);
+  const mSsmtActive = [...document.querySelectorAll('input[name="m-ssmt-active"]:checked')].map(e => e.value);
+  const mConfs = [
+    ...[...document.querySelectorAll('input[name="m-confs"]:checked')].map(e => e.value),
+    ...[...document.querySelectorAll('input[name="m-entry"]:checked')].map(e => e.value),
+  ];
+  trades[idx] = {
+    ...trades[idx],
+    date: document.getElementById('m-date').value,
+    time: document.getElementById('m-time').value,
+    type, r,
+    dir: document.getElementById('m-dir').value,
+    pts: parseFloat(document.getElementById('m-pts').value) || null,
+    sl: parseFloat(document.getElementById('m-sl').value) || null,
+    tradeType: getR('m-tradetype'),
+    daily: getR('m-daily'),
+    weekly: getR('m-weekly'),
+    location: getR('m-location'),
+    fractal: getR('m-fractal'),
+    notes: document.getElementById('m-notes').value.trim(),
+    ssmtEntry: mSsmtEntry,
+    ssmtActive: mSsmtActive,
+    confs: mConfs,
+  };
+  save(); render(); closeModal();
+}
+
+function deleteFromModal() {
+  if (!confirm('Delete this trade?')) return;
+  trades = trades.filter(t => t.id !== editingId);
+  save(); render(); closeModal();
+}
+
+function toggleRadio(el) {
+  if (el._wasChecked) { el.checked = false; el._wasChecked = false; }
+  else { el._wasChecked = true; }
+  // reset _wasChecked on siblings
+  document.querySelectorAll('input[name="'+el.name+'"]').forEach(r => { if(r!==el) r._wasChecked=false; });
+}
+
+function handleRowClick(id) {
+  openEdit(id);
+}
+
+function confirmDelete(id) {
+  if (!confirm('Delete this trade?')) return;
+  trades = trades.filter(t => t.id !== id);
+  save(); render();
+}
+
+}
+
+// check if already authenticated this session
+if (sessionStorage.getItem('pw_ok') === '1') {
+}
+
+render();
+</script>
+<!-- EDIT / SWAP MODAL -->
+<div class="modal-bg" id="editModal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h3>Edit trade <button onclick="closeModal()">✕</button></h3>
+    <div class="modal-grid">
+      <div class="field"><label>Date</label><input type="date" id="m-date"></div>
+      <div class="field"><label>Entry time (ET)</label><input type="time" id="m-time"></div>
+      <div class="field"><label>Result</label><select id="m-type" onchange="mTypeChanged()"><option value="W">Win</option><option value="L">Loss</option><option value="BE">Breakeven</option></select></div>
+      <div class="field"><label>R won</label><input type="number" id="m-r" step="0.1" min="0.1"></div>
+      <div class="field"><label>Direction</label><select id="m-dir"><option value="Long">Long</option><option value="Short">Short</option></select></div>
+      <div class="field"><label>Points</label><input type="number" id="m-pts" step="0.25"></div>
+      <div class="field"><label>Stop (pts)</label><input type="number" id="m-sl" step="0.25"></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Trade type</div>
+      <div style="display:flex;gap:6px">
+        <input type="radio" class="pill-inp" name="m-tradetype" onclick="toggleRadio(this)" id="m-tt-smr" value="SMR"><label class="pill-lbl" for="m-tt-smr">SMR</label>
+        <input type="radio" class="pill-inp" name="m-tradetype" onclick="toggleRadio(this)" id="m-tt-cont" value="Continuation"><label class="pill-lbl" for="m-tt-cont">Continuation</label>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Daily bias</div>
+      <div style="display:flex;gap:6px">
+        <input type="radio" class="pill-inp" name="m-daily" onclick="toggleRadio(this)" id="m-d-with" value="With"><label class="pill-lbl" for="m-d-with">With daily</label>
+        <input type="radio" class="pill-inp" name="m-daily" onclick="toggleRadio(this)" id="m-d-against" value="Against"><label class="pill-lbl" for="m-d-against">Against daily</label>
+        <input type="radio" class="pill-inp" name="m-daily" onclick="toggleRadio(this)" id="m-d-na" value="N/A"><label class="pill-lbl" for="m-d-na">N/A</label>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Weekly bias</div>
+      <div style="display:flex;gap:6px">
+        <input type="radio" class="pill-inp" name="m-weekly" onclick="toggleRadio(this)" id="m-w-with" value="With"><label class="pill-lbl" for="m-w-with">With weekly</label>
+        <input type="radio" class="pill-inp" name="m-weekly" onclick="toggleRadio(this)" id="m-w-against" value="Against"><label class="pill-lbl" for="m-w-against">Against weekly</label>
+        <input type="radio" class="pill-inp" name="m-weekly" onclick="toggleRadio(this)" id="m-w-na" value="N/A"><label class="pill-lbl" for="m-w-na">N/A</label>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Entry location</div>
+      <div style="display:flex;gap:6px">
+        <input type="radio" class="pill-inp" name="m-location" onclick="toggleRadio(this)" id="m-loc-disc" value="Discount"><label class="pill-lbl" for="m-loc-disc">Discount</label>
+        <input type="radio" class="pill-inp" name="m-location" onclick="toggleRadio(this)" id="m-loc-ext" value="Extreme continuation"><label class="pill-lbl" for="m-loc-ext">Extreme continuation</label>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Fractal</div>
+      <div style="display:flex;gap:6px">
+        <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-yes" value="With fractal"><label class="pill-lbl" for="m-frac-yes">With fractal</label>
+        <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-no" value="No fractal"><label class="pill-lbl" for="m-frac-no">No fractal</label>
+      </div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Entry SSMT</div>
+      <div class="pill-group" style="gap:5px"><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-Micro_SSMT" value="Micro SSMT"><label class="pill-lbl" for="m-ssmt-e-Micro_SSMT">Micro SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-Micro_SSMT_Hidden" value="Micro SSMT Hidden"><label class="pill-lbl" for="m-ssmt-e-Micro_SSMT_Hidden">Micro SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-90m_SSMT" value="90m SSMT"><label class="pill-lbl" for="m-ssmt-e-90m_SSMT">90m SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-90m_SSMT_Hidden" value="90m SSMT Hidden"><label class="pill-lbl" for="m-ssmt-e-90m_SSMT_Hidden">90m SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-DC_SSMT" value="DC SSMT"><label class="pill-lbl" for="m-ssmt-e-DC_SSMT">DC SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-DC_SSMT_Hidden" value="DC SSMT Hidden"><label class="pill-lbl" for="m-ssmt-e-DC_SSMT_Hidden">DC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-WC_SSMT" value="WC SSMT"><label class="pill-lbl" for="m-ssmt-e-WC_SSMT">WC SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-WC_SSMT_Hidden" value="WC SSMT Hidden"><label class="pill-lbl" for="m-ssmt-e-WC_SSMT_Hidden">WC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-Monthly_SSMT" value="Monthly SSMT"><label class="pill-lbl" for="m-ssmt-e-Monthly_SSMT">Monthly SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-entry" id="m-ssmt-e-Monthly_SSMT_Hidden" value="Monthly SSMT Hidden"><label class="pill-lbl" for="m-ssmt-e-Monthly_SSMT_Hidden">Monthly SSMT Hidden</label></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Active SSMTs</div>
+      <div class="pill-group" style="gap:5px"><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-Micro_SSMT" value="Micro SSMT"><label class="pill-lbl" for="m-ssmt-a-Micro_SSMT">Micro SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-Micro_SSMT_Hidden" value="Micro SSMT Hidden"><label class="pill-lbl" for="m-ssmt-a-Micro_SSMT_Hidden">Micro SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-90m_SSMT" value="90m SSMT"><label class="pill-lbl" for="m-ssmt-a-90m_SSMT">90m SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-90m_SSMT_Hidden" value="90m SSMT Hidden"><label class="pill-lbl" for="m-ssmt-a-90m_SSMT_Hidden">90m SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-DC_SSMT" value="DC SSMT"><label class="pill-lbl" for="m-ssmt-a-DC_SSMT">DC SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-DC_SSMT_Hidden" value="DC SSMT Hidden"><label class="pill-lbl" for="m-ssmt-a-DC_SSMT_Hidden">DC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-WC_SSMT" value="WC SSMT"><label class="pill-lbl" for="m-ssmt-a-WC_SSMT">WC SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-WC_SSMT_Hidden" value="WC SSMT Hidden"><label class="pill-lbl" for="m-ssmt-a-WC_SSMT_Hidden">WC SSMT Hidden</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-Monthly_SSMT" value="Monthly SSMT"><label class="pill-lbl" for="m-ssmt-a-Monthly_SSMT">Monthly SSMT</label><input type="checkbox" class="pill-inp" name="m-ssmt-active" id="m-ssmt-a-Monthly_SSMT_Hidden" value="Monthly SSMT Hidden"><label class="pill-lbl" for="m-ssmt-a-Monthly_SSMT_Hidden">Monthly SSMT Hidden</label></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Cracks in correlation</div>
+      <div class="pill-group" style="gap:5px"><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-1m_SD" value="1m SD"><label class="pill-lbl" for="m-cf-1m_SD">1m SD</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-5m_SD" value="5m SD"><label class="pill-lbl" for="m-cf-5m_SD">5m SD</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-15m_SD" value="15m SD"><label class="pill-lbl" for="m-cf-15m_SD">15m SD</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-1m_PSP" value="1m PSP"><label class="pill-lbl" for="m-cf-1m_PSP">1m PSP</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-5m_PSP" value="5m PSP"><label class="pill-lbl" for="m-cf-5m_PSP">5m PSP</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-15m_PSP" value="15m PSP"><label class="pill-lbl" for="m-cf-15m_PSP">15m PSP</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-1m_PRC" value="1m PRC"><label class="pill-lbl" for="m-cf-1m_PRC">1m PRC</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-5m_PRC" value="5m PRC"><label class="pill-lbl" for="m-cf-5m_PRC">5m PRC</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-15m_PRC" value="15m PRC"><label class="pill-lbl" for="m-cf-15m_PRC">15m PRC</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-1m_SMTF" value="1m SMTF"><label class="pill-lbl" for="m-cf-1m_SMTF">1m SMTF</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-5m_SMTF" value="5m SMTF"><label class="pill-lbl" for="m-cf-5m_SMTF">5m SMTF</label><input type="checkbox" class="pill-inp" name="m-confs" id="m-cf-15m_SMTF" value="15m SMTF"><label class="pill-lbl" for="m-cf-15m_SMTF">15m SMTF</label></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Entry</div>
+      <div class="pill-group" style="gap:5px"><input type="checkbox" class="pill-inp" name="m-entry" id="m-en-1m_CISD" value="1m CISD"><label class="pill-lbl" for="m-en-1m_CISD">1m CISD</label><input type="checkbox" class="pill-inp" name="m-entry" id="m-en-15s_CISD" value="15s CISD"><label class="pill-lbl" for="m-en-15s_CISD">15s CISD</label><input type="checkbox" class="pill-inp" name="m-entry" id="m-en-10-point_reaction" value="10-point reaction"><label class="pill-lbl" for="m-en-10-point_reaction">10-point reaction</label></div>
+    </div>
+    <div class="modal-section">
+      <div class="modal-section-label">Notes</div>
+      <textarea id="m-notes" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;resize:vertical;min-height:60px"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" style="margin-right:auto" onclick="deleteFromModal()">Delete trade</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveModal()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- SWAP MODE BANNER -->
+
+
+
+<div style="position:fixed;bottom:16px;right:16px;display:flex;gap:6px;z-index:50">
+  <button onclick="exportJSON()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Export JSON</button>
+  <button onclick="document.getElementById('importFile').click()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Import JSON</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+</div>
+
+</body>
+</html>
