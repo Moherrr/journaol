@@ -33,6 +33,49 @@
     --serif:   'Instrument Serif', serif;
   }
 
+  #pw-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #pw-screen .pw-box {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 36px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 320px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.1);
+  }
+  #pw-screen .pw-logo { font-family: var(--mono); font-size: 10px; letter-spacing: .2em; color: var(--faint); text-transform: uppercase; }
+  #pw-screen .pw-logo span { color: var(--accent); }
+  #pw-screen h2 { font-family: var(--serif); font-size: 24px; font-weight: 400; font-style: italic; color: var(--text); }
+  #pw-screen input {
+    width: 100%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    text-align: center;
+    letter-spacing: .1em;
+  }
+  #pw-screen input:focus { border-color: var(--accent); }
+  #pw-screen .pw-error { font-size: 11px; color: var(--red); font-family: var(--mono); display: none; }
+  #pw-wrap { display: none; }
+
   body {
     background: var(--bg);
     color: var(--text);
@@ -410,6 +453,17 @@
 </style></style>
 </head>
 <body>
+
+<div id="pw-screen">
+  <div class="pw-box">
+    <div class="pw-logo"><span>NQ</span> · trade journal</div>
+    <h2></h2>
+    <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <button class="btn btn-primary" style="width:100%" onclick="checkPw()">Enter</button>
+    <span class="pw-error" id="pw-error">Wrong password</span>
+  </div>
+</div>
+<div id="pw-wrap">
 <div class="header">
   <div>
     <div class="logo" style="display:flex;gap:12px;align-items:center">
@@ -634,8 +688,8 @@
 </div>
 
 <script>
-const SUPABASE_URL = 'https://ceeravfkkcyfssbhohgn.supabase.co/';
-const SUPABASE_KEY = 'sb_publishable_Jjfq4AtbsBEHX2Dq-8J2XA_xiVB0vaz';
+const SUPABASE_URL = 'https://ceeravfkkcyfssbhohgn.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZXJhdmZra2N5ZnNzYmhvaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NjA2OTIsImV4cCI6MjA4OTUzNjY5Mn0.l0k5b7Jk2FVnh9JfBSkMEs1Hvo-WzpV0PspOoJt9myw';
 const DB_ID = 'global'; // single shared row storing all trades
 
 let trades = [];
@@ -656,16 +710,70 @@ async function sbFetch(method, body) {
   return res;
 }
 
-function loadFromCloud() {
-  trades = JSON.parse(localStorage.getItem('nq_journal_v2') || '[]');
-  sortTrades();
-  showSyncStatus('saved');
-  render();
+async function loadFromCloud() {
+  try {
+    showSyncStatus('loading...');
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/trades?id=eq.${DB_ID}&select=data`, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+      }
+    });
+    const rows = await res.json();
+    if (rows && rows.length > 0 && rows[0].data) {
+      trades = rows[0].data;
+    } else {
+      trades = [];
+    }
+    sortTrades();
+    showSyncStatus('synced');
+    render();
+  } catch(e) {
+    showSyncStatus('offline');
+    console.error('Load error:', e);
+  }
 }
 
-function saveToCloud() {
-  localStorage.setItem('nq_journal_v2', JSON.stringify(trades));
-  showSyncStatus('saved');
+async function saveToCloud() {
+  const snapshot = JSON.parse(JSON.stringify(trades));
+  showSyncStatus('saving...');
+  try {
+    // use PATCH (update) first, if 0 rows affected then POST (insert)
+    const patchRes = await fetch(`${SUPABASE_URL}/rest/v1/trades?id=eq.${DB_ID}`, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation',
+      },
+      body: JSON.stringify({ data: snapshot, updated_at: new Date().toISOString() })
+    });
+    const patched = await patchRes.json();
+    if (!patchRes.ok || (Array.isArray(patched) && patched.length === 0)) {
+      // row doesn't exist yet — insert it
+      const postRes = await fetch(`${SUPABASE_URL}/rest/v1/trades`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify([{ id: DB_ID, data: snapshot, updated_at: new Date().toISOString() }])
+      });
+      if (!postRes.ok) {
+        const err = await postRes.text();
+        console.error('Supabase insert error:', postRes.status, err);
+        showSyncStatus('error');
+        return;
+      }
+    }
+    showSyncStatus('synced');
+  } catch(e) {
+    showSyncStatus('error');
+    console.error('Save error:', e);
+  }
 }
 
 function showSyncStatus(status) {
@@ -1087,50 +1195,4 @@ function render() {
 
   // chart
   const chart = document.getElementById('eqChart');
-  if (cum.length) {
-    const mn=Math.min(0,...cum), mx=Math.max(0.01,...cum), range=mx-mn||1;
-    chart.innerHTML = cum.map(v=>`<div class="chart-bar" style="background:${v>=0?'#22c55e':'#ef4444'};height:${Math.max(2,((v-mn)/range)*72)}px"></div>`).join('');
-  } else {
-    chart.innerHTML='<div style="width:100%;text-align:center;color:var(--muted);font-size:12px;align-self:center">No data yet</div>';
-  }
-
-  // table
-  const inner = document.getElementById('tableInner');
-  if (!n) { inner.innerHTML='<div class="empty-state">No trades for this filter</div>'; }
-  else {
-    // cumR always based on full trades order for accuracy
-    const cumMap = {};
-    let _cum = 0;
-    trades.forEach(t => { _cum += rValue(t); cumMap[t.id] = _cum; });
-    const displayList = [...filtered].reverse();
-    const rows = displayList.map((t,i)=>{
-      const v=rValue(t); const cumR=cumMap[t.id];
-      const rc=v>0?'var(--accent)':v<0?'var(--red)':'var(--muted)';
-      const cc=cumMap[t.id]>0?'var(--accent)':cumMap[t.id]<0?'var(--red)':'var(--muted)';
-      const tags=(t.confs||[]).map(c=>`<span class="tag">${c}</span>`).join('');
-      const tt=t.tradeType?`<span class="rp rp-${t.tradeType==='SMR'?'SMR':'Cont'}">${t.tradeType}</span>`:'';
-      const db=t.daily?`<span style="font-size:10px;color:var(--muted)">${t.daily} D</span>`:'';
-      const wb=t.weekly?`<span style="font-size:10px;color:var(--muted)">${t.weekly} W</span>`:'';
-      return `<tr class="clickable-row" data-id="${t.id}" onclick="handleRowClick(${t.id})">
-        <td class="mono" style="color:var(--muted)">${i+1}</td>
-        <td class="mono" style="font-size:11px">${t.date||'—'}</td>
-        <td class="mono" style="font-size:11px;color:var(--muted)">${t.time||'—'}</td>
-        <td><span class="rp rp-${t.dir}">${t.dir}</span></td>
-        <td><span class="rp rp-${t.type}">${t.type==='BE'?'BE':t.type==='W'?'Win':'Loss'}</span></td>
-        <td>${tt||'<span style="font-size:10px;color:var(--faint);font-family:var(--mono)">—</span>'}</td>
-        <td class="mono" style="color:${rc};font-weight:500">${v>0?'+':''}${v.toFixed(2)}R</td>
-        <td class="mono" style="color:var(--muted)">${t.pts!=null?(t.pts>0?'+':'')+t.pts+' pts':'—'}</td>
-        <td class="mono" style="color:var(--muted)">${t.sl!=null?t.sl+' pts':'—'}</td>
-        <td>
-          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);white-space:nowrap">${t.daily ? t.daily+' D' : '—'}</div>
-          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);white-space:nowrap;margin-top:2px">${t.weekly ? t.weekly+' W' : ''}</div>
-        </td>
-        <td><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.location||'—'}</span></td>
-        <td><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.fractal==='With fractal'?'Yes':t.fractal==='No fractal'?'No':'—'}</span></td>
-        <td><span style="font-size:10px;color:var(--accent);font-family:var(--mono)">${Array.isArray(t.ssmtEntry)?t.ssmtEntry.join(', '):t.ssmtEntry||'—'}</span></td>
-        <td><div class="tag-wrap">${(t.ssmtActive||[]).map(s=>`<span class="tag">${s}</span>`).join('')||'<span style="font-size:10px;color:var(--muted)">—</span>'}</div></td>
-        <td>
-          <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:3px">
-            ${['1m CISD','15s CISD','10-point reaction'].filter(e=>(t.confs||[]).includes(e)).map(e=>`<span style="font-size:9px;font-family:var(--mono);background:rgba(45,106,79,.08);border:1px solid rgba(45,106,79,.18);color:var(--accent);padding:1px 6px;border-radius:4px">${e}</span>`).join('')||''}
-          </div>
-          <div class="tag-wrap">${tags||'<span style="color:var(--muted);font-size:10px">—</sp... (18 KB left)
+  ... (22 KB left)
