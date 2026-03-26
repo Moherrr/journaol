@@ -23,11 +23,28 @@
     --text:    #1a1814;
     --muted:   #8a8278;
     --faint:   #b5b0a8;
-    --accent:  #2d6a4f;
-    --accent2: #1b4332;
-    --red:     #c0392b;
+
+    --accent:  #6A7337;
+    --accent2: #4a5226;
+
+    --red:     #7a4a46;
+    --red2:    #5f3835;
+
     --amber:   #b7791f;
     --blue:    #1a4e8f;
+
+    --cal-pos-bg: rgba(106,115,55,0.16);
+    --cal-pos-bg-strong: rgba(106,115,55,0.24);
+    --cal-pos-text: #5f6831;
+
+    --cal-neg-bg: rgba(122,74,70,0.14);
+    --cal-neg-bg-strong: rgba(122,74,70,0.22);
+    --cal-neg-text: #6a403d;
+
+    --cal-neutral-bg: #f2efe9;
+    --cal-neutral-border: rgba(0,0,0,0.06);
+    --cal-selected: #7b8450;
+
     --mono:    'Geist Mono', monospace;
     --sans:    'Geist', sans-serif;
     --serif:   'Instrument Serif', serif;
@@ -281,11 +298,11 @@
   .btn-primary:hover { background: #2d2a25; }
   .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
   .btn-ghost:hover { border-color: var(--text); color: var(--text); background: var(--bg3); }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(192,57,43,.2); font-size: 11px; padding: 6px 12px; }
+  .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(122,74,70,.2); font-size: 11px; padding: 6px 12px; }
   .btn-danger:hover { background: rgba(192,57,43,.06); }
   .form-actions { display: flex; gap: 10px; margin-top: 20px; align-items: center; }
   .form-error { font-size: 11px; color: var(--red); font-family: var(--mono); display: none; }
-  .field input.error, .field select.error { border-color: var(--red) !important; background: rgba(192,57,43,.04); }
+  .field input.error, .field select.error { border-color: var(--red) !important; background: rgba(122,74,70,.04); }
 
   /* ── TABLE ── */
   .table-wrap {
@@ -374,12 +391,12 @@
     font-family: var(--mono);
     letter-spacing: .04em;
   }
-  .rp-W { background: rgba(45,106,79,.1); color: var(--accent); border: 1px solid rgba(45,106,79,.2); }
-  .rp-L { background: rgba(192,57,43,.08); color: var(--red); border: 1px solid rgba(192,57,43,.18); }
+  .rp-W { background: rgba(106,115,55,.12); color: var(--accent); border: 1px solid rgba(106,115,55,.25); }
+  .rp-L { background: rgba(122,74,70,.10); color: var(--red); border: 1px solid rgba(122,74,70,.22); }
   .rp-BE { background: var(--bg3); color: var(--muted); border: 1px solid var(--border2); }
   .rp-Long { background: rgba(26,78,143,.08); color: var(--blue); border: 1px solid rgba(26,78,143,.18); }
   .rp-Short { background: rgba(183,121,31,.08); color: var(--amber); border: 1px solid rgba(183,121,31,.18); }
-  .rp-SMR { background: rgba(45,106,79,.08); color: var(--accent); border: 1px solid rgba(45,106,79,.18); }
+  .rp-SMR { background: rgba(106,115,55,.10); color: var(--accent); border: 1px solid rgba(106,115,55,.22); }
   .rp-Cont { background: rgba(183,121,31,.08); color: var(--amber); border: 1px solid rgba(183,121,31,.18); }
 
   .tag-wrap { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -450,7 +467,39 @@
 
   @media (max-width: 900px) { .stats { grid-template-columns: repeat(5, 1fr); } body { padding: 16px; } }
   @media (max-width: 600px) { .stats { grid-template-columns: repeat(2, 1fr); } .form-grid { grid-template-columns: 1fr 1fr; } }
-</style></style>
+
+  .cal-shell { display: grid; grid-template-columns: repeat(7, 1fr) 84px; gap: 4px; }
+  .cal-head { font-size: 9px; font-family: var(--mono); color: var(--faint); text-align: center; letter-spacing: .12em; text-transform: uppercase; padding: 2px 8px 10px; }
+  .cal-day { min-height: 116px; border-radius: 10px; border: 1px solid var(--cal-neutral-border); background: var(--cal-neutral-bg); padding: 10px 9px 9px; display: flex; flex-direction: column; transition: transform .12s ease, border-color .12s ease, background .12s ease, box-shadow .12s ease; }
+  .cal-day.has-trades { cursor: pointer; }
+  .cal-day.has-trades:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,.04); }
+  .cal-day.pos { background: var(--cal-pos-bg); }
+  .cal-day.neg { background: var(--cal-neg-bg); }
+  .cal-day.flat { background: rgba(0,0,0,0.035); }
+  .cal-day.selected { border: 1.5px solid var(--cal-selected); box-shadow: 0 0 0 2px rgba(123,132,80,.10); }
+  .cal-day.today:not(.selected) { border: 1.5px solid rgba(106,115,55,.45); }
+  .cal-date-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .cal-date-num { font-size: 10px; font-family: var(--mono); color: var(--faint); }
+  .cal-date-today { width: 18px; height: 18px; border-radius: 999px; background: var(--accent); color: white; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-family: var(--mono); }
+  .cal-day-body { margin-top: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+  .cal-pnl { font-size: 15px; line-height: 1; font-family: var(--mono); font-weight: 600; letter-spacing: -.02em; }
+  .cal-pnl.pos { color: var(--cal-pos-text); }
+  .cal-pnl.neg { color: var(--cal-neg-text); }
+  .cal-pnl.flat { color: var(--muted); }
+  .cal-meta { font-size: 9px; font-family: var(--mono); color: var(--muted); line-height: 1.25; }
+  .cal-week { min-height: 116px; border-radius: 10px; border: 1px solid var(--cal-neutral-border); background: rgba(255,255,255,0.18); padding: 9px 7px; display: flex; flex-direction: column; align-items: flex-end; transition: background .12s ease, border-color .12s ease; }
+  .cal-week.has-trades { cursor: pointer; }
+  .cal-week.has-trades.pos { background: rgba(106,115,55,0.12); }
+  .cal-week.has-trades.neg { background: rgba(122,74,70,0.10); }
+  .cal-week.selected { border: 1.5px solid var(--cal-selected); box-shadow: 0 0 0 2px rgba(123,132,80,.08); }
+  .cal-week-label { font-size: 8px; font-family: var(--mono); color: var(--faint); text-transform: uppercase; letter-spacing: .1em; }
+  .cal-week-pnl { margin-top: auto; font-size: 12px; font-family: var(--mono); font-weight: 600; }
+  .cal-week-pnl.pos { color: var(--cal-pos-text); }
+  .cal-week-pnl.neg { color: var(--cal-neg-text); }
+  .cal-week-pnl.flat { color: var(--muted); }
+  .cal-badge { margin-top: 5px; font-size: 8px; font-family: var(--mono); border: 1px solid var(--border); background: rgba(255,255,255,.28); color: var(--muted); border-radius: 999px; padding: 2px 6px; }
+
+</style>
 </head>
 <body>
 
@@ -475,7 +524,12 @@
   <div class="header-actions"></div>
 </div>
 
-<div class="stats">
+<div style="display:flex;gap:8px;margin-bottom:16px">
+  <button class="btn btn-ghost" id="tab-main-btn" onclick="showMainTab()" style="font-size:11px;padding:7px 16px;background:var(--text);color:var(--bg);border-color:var(--text)">Journal</button>
+  <button class="btn btn-ghost" id="tab-cal-btn" onclick="showCalTab()" style="font-size:11px;padding:7px 16px">PNL Calendar</button>
+</div>
+
+<div class="stats" id="statsBar">
   <div class="stat"><div class="stat-label">Trades</div><div class="stat-value" id="s-count">0</div></div>
   <div class="stat"><div class="stat-label">Win rate</div><div class="stat-value" id="s-wr">—</div></div>
   <div class="stat"><div class="stat-label">Avg R</div><div class="stat-value" id="s-avg">—</div></div>
@@ -487,9 +541,9 @@
   <div class="stat"><div class="stat-label">Max win streak</div><div class="stat-value" id="s-max-win-streak">—</div></div>
 </div>
 
-<div class="chart-wrap" id="eqChart"></div>
+<div id="chartWrap"><div class="chart-wrap" id="eqChart"></div></div>
 
-<div class="form-section">
+<div id="journal-form-wrap"><div class="form-section">
   <h2>Log trade</h2>
 
   <!-- ROW 1: basic fields -->
@@ -529,6 +583,8 @@
       <label>Stop size (pts)</label>
       <input type="number" id="f-sl" step="0.25" placeholder="e.g. 20">
     </div>
+    <div class="field"><label>Instrument</label><select id="f-instrument"><option value="NQ">NQ</option><option value="BTC">BTC</option></select></div>
+    <div class="field"><label>P&amp;L ($)</label><input type="number" id="f-dollar" step="0.01" placeholder="e.g. 500"></div>
   </div>
 
   <!-- Location + Fractal outside grid so they match confluence pill size -->
@@ -542,8 +598,11 @@
   <div style="margin-top:14px">
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);font-weight:500;margin-bottom:8px">Fractal confluence</div>
     <div class="pill-group">
-      <input type="radio" class="pill-inp" name="fractal" id="frac-yes" value="With fractal"><label class="pill-lbl" for="frac-yes">Fractal</label>
       <input type="radio" class="pill-inp" name="fractal" id="frac-no" value="No fractal"><label class="pill-lbl" for="frac-no">No fractal</label>
+      <input type="radio" class="pill-inp" name="fractal" id="frac-15m" value="15m fractal"><label class="pill-lbl" for="frac-15m">15m</label>
+      <input type="radio" class="pill-inp" name="fractal" id="frac-1h" value="1h fractal"><label class="pill-lbl" for="frac-1h">1h</label>
+      <input type="radio" class="pill-inp" name="fractal" id="frac-4h" value="4h fractal"><label class="pill-lbl" for="frac-4h">4h</label>
+      <input type="radio" class="pill-inp" name="fractal" id="frac-1d" value="1d fractal"><label class="pill-lbl" for="frac-1d">1d</label>
     </div>
   </div>
   <div style="display:none"><!-- dummy to close grid -->
@@ -554,7 +613,6 @@
     <div class="tab-bar">
       <button class="tab-btn active" onclick="switchTab('confs',this)">Confluences</button>
       <button class="tab-btn" onclick="switchTab('trade-type',this)">Trade type</button>
-      <button class="tab-btn" onclick="switchTab('bias',this)">Bias</button>
       <button class="tab-btn" onclick="switchTab('notes',this)">Notes</button>
     </div>
 
@@ -576,27 +634,6 @@
       </div>
     </div>
 
-    <!-- TAB: Bias -->
-    <div class="tab-panel" id="tab-bias">
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="bias-row">
-          <span class="bias-label">Daily bias</span>
-          <div class="bias-opts">
-            <input type="radio" class="bias-radio" name="daily" id="d-with" value="With"><label class="bias-opt" for="d-with">With daily</label>
-            <input type="radio" class="bias-radio" name="daily" id="d-against" value="Against"><label class="bias-opt" for="d-against">Against daily</label>
-            <input type="radio" class="bias-radio" name="daily" id="d-na" value="N/A"><label class="bias-opt" for="d-na">N/A</label>
-          </div>
-        </div>
-        <div class="bias-row">
-          <span class="bias-label">Weekly bias</span>
-          <div class="bias-opts">
-            <input type="radio" class="bias-radio" name="weekly" id="w-with" value="With"><label class="bias-opt" for="w-with">With weekly</label>
-            <input type="radio" class="bias-radio" name="weekly" id="w-against" value="Against"><label class="bias-opt" for="w-against">Against weekly</label>
-            <input type="radio" class="bias-radio" name="weekly" id="w-na" value="N/A"><label class="bias-opt" for="w-na">N/A</label>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- TAB: Notes -->
     <div class="tab-panel" id="tab-notes">
@@ -608,7 +645,7 @@
   </div>
 
   <!-- SSMT CONTEXT -->
-  <div id="ssmt-context" style="margin-top:18px;display:none">
+  <div id="ssmt-context" style="margin-top:18px;display:block">
     <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">SSMT context</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div class="field">
@@ -630,8 +667,32 @@
     <button class="btn btn-ghost" onclick="resetForm()">Reset</button>
   </div>
 </div>
+</div><!-- end journal-form-wrap -->
 
-<div class="table-wrap">
+
+<!-- PNL CALENDAR -->
+<div id="pnlCalWrap" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:28px;margin-bottom:20px">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <h2 style="font-family:var(--serif);font-size:22px;font-style:italic;font-weight:400" id="calMonthLabel">March 2026</h2>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="calPrev()" style="background:none;border:1px solid var(--border2);border-radius:7px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;cursor:pointer">← Prev</button>
+      <span id="calMonthDisplay" style="font-family:var(--mono);font-size:12px;min-width:110px;text-align:center"></span>
+      <button onclick="calNext()" style="background:none;border:1px solid var(--border2);border-radius:7px;color:var(--muted);font-family:var(--mono);font-size:11px;padding:5px 12px;cursor:pointer">Next →</button>
+    </div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px">
+    <div style="background:var(--bg3);border-radius:8px;padding:14px 16px"><div style="font-size:9px;font-family:var(--mono);color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Month P&L</div><div style="font-size:18px;font-family:var(--mono);font-weight:500" id="cal-month-pnl">—</div></div>
+    <div style="background:var(--bg3);border-radius:8px;padding:14px 16px"><div style="font-size:9px;font-family:var(--mono);color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Trading days</div><div style="font-size:18px;font-family:var(--mono);font-weight:500" id="cal-trading-days">—</div></div>
+    <div style="background:var(--bg3);border-radius:8px;padding:14px 16px"><div style="font-size:9px;font-family:var(--mono);color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Best day</div><div style="font-size:18px;font-family:var(--mono);font-weight:500" id="cal-best-day">—</div></div>
+    <div style="background:var(--bg3);border-radius:8px;padding:14px 16px"><div style="font-size:9px;font-family:var(--mono);color:var(--faint);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">Worst day</div><div style="font-size:18px;font-family:var(--mono);font-weight:500" id="cal-worst-day">—</div></div>
+  </div>
+  <div id="calGrid" class="cal-shell"></div>
+  <div id="cal-trade-section" style="margin-top:24px;display:none">
+    <div style="font-size:9px;font-family:var(--mono);color:var(--faint);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px" id="cal-trade-label">Trades</div>
+    <div id="cal-trade-inner"></div>
+  </div>
+</div>
+<div class="table-wrap" id="tableWrap">
   <div class="table-header">
     <div style="display:flex;align-items:center;gap:12px">
       <h2>Trade history</h2>
@@ -685,10 +746,20 @@
   <button onclick="exportJSON()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Export JSON</button>
   <button onclick="document.getElementById('importFile').click()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Import JSON</button>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+</div><!-- end pw-wrap -->
+
+<div style="position:fixed;bottom:16px;left:16px;z-index:50;display:flex;gap:6px;align-items:center">
+  <button onclick="toggleDiscordSelect()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)" id="discord-export-btn">Export Discord</button>
+  <span id="discord-hint" style="font-family:var(--mono);font-size:10px;color:var(--accent);display:none">← click a trade</span>
+</div>
+<div style="position:fixed;bottom:16px;right:16px;display:flex;gap:6px;z-index:50">
+  <button onclick="exportJSON()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Export JSON</button>
+  <button onclick="document.getElementById('importFile').click()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Import JSON</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
 </div>
 
 <script>
-const SUPABASE_URL = 'https://ceeravfkkcyfssbhohgn.supabase.co'; // 🔧 Paste your Supabase project URL here
+const SUPABASE_URL = 'https://ceeravfkkcyfssbhohgn.supabase.co/'; // 🔧 Paste your Supabase project URL here
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZXJhdmZra2N5ZnNzYmhvaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NjA2OTIsImV4cCI6MjA4OTUzNjY5Mn0.l0k5b7Jk2FVnh9JfBSkMEs1Hvo-WzpV0PspOoJt9myw'; // 🔧 Paste your Supabase anon/public key here
 const DB_ID = 'global'; // single shared row storing all trades
 
@@ -725,6 +796,7 @@ async function loadFromCloud() {
     } else {
       trades = [];
     }
+    migrateOldTrades();
     sortTrades();
     showSyncStatus('synced');
     render();
@@ -932,8 +1004,6 @@ function addTrade() {
   if (!timeEl.value) { timeEl.classList.add('error'); errors.push('entry time'); }
   if (!ptsEl.value)  { ptsEl.classList.add('error');  errors.push('points'); }
   if (!slEl.value)   { slEl.classList.add('error');   errors.push('stop size'); }
-  if (!getDaily())     errors.push('daily bias');
-  if (!getWeekly())    errors.push('weekly bias');
   if (!getLocation())  errors.push('entry location');
   if (!getFractal())   errors.push('fractal');
 
@@ -971,6 +1041,8 @@ function addTrade() {
     ssmtEntry:  getSsmtEntry(),
     ssmtActive: getSsmtActive(),
     notes:      document.getElementById('f-notes').value.trim(),
+    instrument: document.getElementById('f-instrument').value,
+    dollar:     parseFloat(document.getElementById('f-dollar').value) || null,
   });
   save(); render(); resetForm();
 }
@@ -990,6 +1062,8 @@ function resetForm() {
   document.getElementById('f-notes').value = '';
   document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
   document.getElementById('f-time').value = '';
+  if(document.getElementById('f-instrument')) document.getElementById('f-instrument').value = 'NQ';
+  if(document.getElementById('f-dollar')) document.getElementById('f-dollar').value = '';
   document.querySelectorAll('.pill-inp, .tt-radio, .bias-radio, input[name="location"], input[name="fractal"], input[name="ssmt-entry"], input[name="ssmt-active"]').forEach(e => e.checked = false);
   document.querySelectorAll('input[name="txo"]').forEach(e => e.checked = false);
   const txoW = document.getElementById('txo-wrap');
@@ -998,6 +1072,7 @@ function resetForm() {
 
 function save() {
   saveToCloud();
+  if(typeof currentTab !== "undefined" && currentTab === "calendar") renderCalendar();
 }
 
 // ── AUTO-BACKUP every even trade count ──
@@ -1137,7 +1212,7 @@ function render() {
   sortTrades();
   let filtered = activeFilter === 'all' ? trades : trades.filter(t => t.tradeType === activeFilter);
   if (activeEntryFilter !== 'all') filtered = filtered.filter(t => (t.confs||[]).includes(activeEntryFilter));
-  if (activeConfFilter === 'Fractal') filtered = filtered.filter(t => t.fractal === 'With fractal');
+  if (activeConfFilter === 'Fractal') filtered = filtered.filter(t => t.fractal && t.fractal !== 'No fractal');
   else if (activeConfFilter !== 'all') filtered = filtered.filter(t => (t.confs||[]).includes(activeConfFilter));
   if (activeTimeFilter !== 'all') filtered = filtered.filter(t => tradeInTimeSlot(t, activeTimeFilter));
   const n = filtered.length;
@@ -1229,12 +1304,10 @@ function render() {
         <td class="mono" style="color:${rc};font-weight:500">${v>0?'+':''}${v.toFixed(2)}R</td>
         <td class="mono" style="color:var(--muted)">${t.pts!=null?(t.pts>0?'+':'')+t.pts+' pts':'—'}</td>
         <td class="mono" style="color:var(--muted)">${t.sl!=null?t.sl+' pts':'—'}</td>
-        <td>
-          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);white-space:nowrap">${t.daily ? t.daily+' D' : '—'}</div>
-          <div style="font-size:10px;color:var(--muted);font-family:var(--mono);white-space:nowrap;margin-top:2px">${t.weekly ? t.weekly+' W' : ''}</div>
-        </td>
+        <td><span style="font-size:10px;font-family:var(--mono);color:var(--muted)">${t.instrument||'NQ'}</span></td>
+        <td class="mono" style="color:${t.dollar>0?'var(--accent)':t.dollar<0?'var(--red)':'var(--muted)'}">$${t.dollar!=null?(t.dollar>=0?'+':'')+t.dollar.toLocaleString():'—'}</td>
         <td><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.location||'—'}</span></td>
-        <td><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.fractal==='With fractal'?'Yes':t.fractal==='No fractal'?'No':'—'}</span></td>
+        <td><span style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.fractal==='No fractal'?'No':t.fractal||'—'}</span></td>
         <td><span style="font-size:10px;color:var(--accent);font-family:var(--mono)">${Array.isArray(t.ssmtEntry)?t.ssmtEntry.join(', '):t.ssmtEntry||'—'}</span></td>
         <td><div class="tag-wrap">${(t.ssmtActive||[]).map(s=>`<span class="tag">${s}</span>`).join('')||'<span style="font-size:10px;color:var(--muted)">—</span>'}</div></td>
         <td>
@@ -1252,7 +1325,7 @@ function render() {
         </td>
       </tr>`;
     }).join('');
-    inner.innerHTML=`<table><thead><tr><th>#</th><th>Date</th><th>Time</th><th>Dir</th><th>Result</th><th>Type</th><th>R</th><th>Points</th><th>Stop</th><th>Bias</th><th>Location</th><th>Fractal</th><th>Entry SSMT</th><th>Active SSMTs</th><th>Confluences</th><th>Cum R</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+    inner.innerHTML=`<table><thead><tr><th>#</th><th>Date</th><th>Time</th><th>Dir</th><th>Result</th><th>Type</th><th>R</th><th>Points</th><th>Stop</th><th>Instr</th><th>P&L</th><th>Location</th><th>Fractal</th><th>Entry SSMT</th><th>Active SSMTs</th><th>Confluences</th><th>Cum R</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
   }
 
 }
@@ -1274,6 +1347,8 @@ function openEdit(id) {
   document.getElementById('m-pts').value = t.pts || '';
   document.getElementById('m-sl').value = t.sl || '';
   document.getElementById('m-notes').value = t.notes || '';
+  if(document.getElementById('m-instrument')) document.getElementById('m-instrument').value = t.instrument || 'NQ';
+  if(document.getElementById('m-dollar')) document.getElementById('m-dollar').value = t.dollar != null ? t.dollar : '';
 
   // radio fields
   const setRadio = (name, val) => {
@@ -1338,6 +1413,8 @@ function saveModal() {
     location: getR('m-location'),
     fractal: getR('m-fractal'),
     notes: document.getElementById('m-notes').value.trim(),
+    instrument: document.getElementById('m-instrument') ? document.getElementById('m-instrument').value : (trades[idx].instrument||'NQ'),
+    dollar: document.getElementById('m-dollar') ? (parseFloat(document.getElementById('m-dollar').value)||null) : trades[idx].dollar,
     ssmtEntry: mSsmtEntry,
     ssmtActive: mSsmtActive,
     confs: mConfs,
@@ -1359,6 +1436,7 @@ function toggleRadio(el) {
 }
 
 function handleRowClick(id) {
+  if(discordSelectMode){copyTradeToDiscord(id);return;}
   openEdit(id);
 }
 
@@ -1392,6 +1470,308 @@ if (sessionStorage.getItem('pw_ok') === '1') {
   document.getElementById('pw-wrap').style.display = 'block';
 }
 
+// ── TAB SWITCHING ──
+let currentTab = 'main';
+function showMainTab() {
+  currentTab = 'main';
+  document.getElementById('pnlCalWrap').style.display = 'none';
+  document.getElementById('statsBar').style.display = '';
+  document.getElementById('chartWrap').style.display = '';
+  document.getElementById('tableWrap').style.display = '';
+  document.getElementById('journal-form-wrap').style.display = 'block';
+  document.getElementById('tab-main-btn').style.cssText = 'font-size:11px;padding:7px 16px;background:var(--text);color:var(--bg);border-color:var(--text)';
+  document.getElementById('tab-cal-btn').style.cssText = 'font-size:11px;padding:7px 16px';
+}
+function showCalTab() {
+  currentTab = 'calendar';
+  document.getElementById('pnlCalWrap').style.display = 'block';
+  document.getElementById('statsBar').style.display = 'none';
+  document.getElementById('chartWrap').style.display = 'none';
+  document.getElementById('tableWrap').style.display = 'none';
+  document.getElementById('journal-form-wrap').style.display = 'none';
+  document.getElementById('tab-cal-btn').style.cssText = 'font-size:11px;padding:7px 16px;background:var(--text);color:var(--bg);border-color:var(--text)';
+  document.getElementById('tab-main-btn').style.cssText = 'font-size:11px;padding:7px 16px';
+  renderCalendar();
+}
+
+// ── PNL CALENDAR ──
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+let calSelectedDay = null;
+let calSelectedWeek = null;
+
+function calPrev() { calMonth--; if(calMonth<0){calMonth=11;calYear--;} calSelectedDay=null;calSelectedWeek=null;showCalTrades(null);renderCalendar(); }
+function calNext() { calMonth++; if(calMonth>11){calMonth=0;calYear++;} calSelectedDay=null;calSelectedWeek=null;showCalTrades(null);renderCalendar(); }
+
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonthLabel').textContent = months[calMonth] + ' ' + calYear;
+  document.getElementById('calMonthDisplay').textContent = months[calMonth] + ' ' + calYear;
+
+  const dayMap = {};
+  trades.forEach(t => {
+    if (!t.date) return;
+    const [y, m] = t.date.split('-').map(Number);
+    if (y !== calYear || m - 1 !== calMonth) return;
+    const d = Number(t.date.split('-')[2]);
+    if (!dayMap[d]) dayMap[d] = [];
+    dayMap[d].push(t);
+  });
+
+  let monthPnl = 0, bestDay = null, worstDay = null, tradingDays = 0;
+  Object.values(dayMap).forEach(ts => {
+    const dp = ts.reduce((s, t) => s + (t.dollar || 0), 0);
+    monthPnl += dp; tradingDays++;
+    if (bestDay === null || dp > bestDay) bestDay = dp;
+    if (worstDay === null || dp < worstDay) worstDay = dp;
+  });
+
+  const fmt = v => v == null ? '—' : `${v >= 0 ? '+' : '−'}$${Math.abs(v).toLocaleString()}`;
+  const mpnl = document.getElementById('cal-month-pnl');
+  mpnl.textContent = Object.keys(dayMap).length ? fmt(monthPnl) : '—';
+  mpnl.style.color = monthPnl > 0 ? 'var(--cal-pos-text)' : monthPnl < 0 ? 'var(--cal-neg-text)' : '';
+  document.getElementById('cal-trading-days').textContent = tradingDays || '—';
+  const bd = document.getElementById('cal-best-day');
+  bd.textContent = bestDay != null ? fmt(bestDay) : '—';
+  bd.style.color = bestDay > 0 ? 'var(--cal-pos-text)' : '';
+  const wd = document.getElementById('cal-worst-day');
+  wd.textContent = worstDay != null ? fmt(worstDay) : '—';
+  wd.style.color = worstDay < 0 ? 'var(--cal-neg-text)' : '';
+
+  const grid = document.getElementById('calGrid');
+  grid.innerHTML = '';
+  grid.className = 'cal-shell';
+
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun',''].forEach((d, i) => {
+    const head = document.createElement('div');
+    head.className = 'cal-head';
+    head.style.textAlign = i < 7 ? 'center' : 'right';
+    head.textContent = d;
+    grid.appendChild(head);
+  });
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const today = new Date();
+
+  const weeks = [];
+  let cur = [];
+  for (let i = 0; i < startOffset; i++) cur.push(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    cur.push(d);
+    if (cur.length === 7) { weeks.push(cur); cur = []; }
+  }
+  while (cur.length < 7 && cur.length > 0) cur.push(null);
+  if (cur.length) weeks.push(cur);
+
+  weeks.forEach((week, wi) => {
+    const weekTrades = [];
+    week.forEach(d => { if (d && dayMap[d]) weekTrades.push(...dayMap[d]); });
+    const weekPnl = weekTrades.reduce((s, t) => s + (t.dollar || 0), 0);
+    const weekHasDollar = weekTrades.some(t => t.dollar != null);
+    const weekDays = week.filter(d => d && dayMap[d]).length;
+    const weekW = weekTrades.filter(t => t.type === 'W').length;
+    const weekL = weekTrades.filter(t => t.type === 'L').length;
+
+    week.forEach(d => {
+      const cell = document.createElement('div');
+      if (!d) { cell.style.minHeight = '116px'; grid.appendChild(cell); return; }
+
+      const ts = dayMap[d] || null;
+      const hasTrades = !!ts;
+      const hasDollar = ts && ts.some(t => t.dollar != null);
+      const dayPnl = ts ? ts.reduce((s, t) => s + (t.dollar || 0), 0) : 0;
+      const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+      const isSelDay = calSelectedDay === d && calSelectedWeek === null;
+      const isSelWeek = calSelectedWeek === wi && calSelectedDay === null;
+
+      let tone = 'flat';
+      if (hasTrades && hasDollar) tone = dayPnl > 0 ? 'pos' : dayPnl < 0 ? 'neg' : 'flat';
+
+      cell.className = ['cal-day', hasTrades ? 'has-trades' : '', hasTrades ? tone : '', isSelDay ? 'selected' : '', isToday ? 'today' : ''].filter(Boolean).join(' ');
+
+      if (hasTrades) {
+        if (isSelWeek && !isSelDay) {
+          cell.style.background = dayPnl > 0 ? 'var(--cal-pos-bg-strong)' : dayPnl < 0 ? 'var(--cal-neg-bg-strong)' : 'rgba(0,0,0,0.055)';
+        }
+        cell.onclick = () => calSelectDay(d, wi);
+      }
+
+      const top = document.createElement('div');
+      top.className = 'cal-date-row';
+      const dateNum = document.createElement('span');
+      dateNum.className = isToday ? 'cal-date-today' : 'cal-date-num';
+      dateNum.textContent = d;
+      top.appendChild(dateNum);
+      cell.appendChild(top);
+
+      if (hasTrades) {
+        const body = document.createElement('div');
+        body.className = 'cal-day-body';
+        if (hasDollar) {
+          const pnl = document.createElement('div');
+          pnl.className = `cal-pnl ${tone}`;
+          pnl.textContent = `${dayPnl >= 0 ? '+' : '−'}$${Math.abs(dayPnl).toLocaleString()}`;
+          body.appendChild(pnl);
+        }
+        const meta1 = document.createElement('div');
+        meta1.className = 'cal-meta';
+        meta1.textContent = `${ts.length} trade${ts.length !== 1 ? 's' : ''}`;
+        body.appendChild(meta1);
+        const wr = ts.length ? ((ts.filter(t => t.type === 'W').length / ts.length) * 100).toFixed(0) + '%' : '';
+        if (wr) {
+          const meta2 = document.createElement('div');
+          meta2.className = 'cal-meta';
+          meta2.textContent = wr;
+          body.appendChild(meta2);
+        }
+        cell.appendChild(body);
+      }
+      grid.appendChild(cell);
+    });
+
+    // week cell
+    const weekCell = document.createElement('div');
+    const weekTone = weekPnl > 0 ? 'pos' : weekPnl < 0 ? 'neg' : 'flat';
+    const weekSelected = calSelectedWeek === wi && calSelectedDay === null;
+    weekCell.className = ['cal-week', weekTrades.length ? 'has-trades' : '', weekTrades.length ? weekTone : '', weekSelected ? 'selected' : ''].filter(Boolean).join(' ');
+    if (weekTrades.length) weekCell.onclick = () => calSelectWeek(wi, week.filter(d => d !== null));
+
+    if (weekTrades.length) {
+      const label = document.createElement('div');
+      label.className = 'cal-week-label';
+      label.textContent = `Week ${wi + 1}`;
+      weekCell.appendChild(label);
+
+      if (weekHasDollar) {
+        const pnl = document.createElement('div');
+        pnl.className = `cal-week-pnl ${weekTone}`;
+        pnl.textContent = `${weekPnl >= 0 ? '+' : '−'}$${Math.abs(weekPnl).toLocaleString()}`;
+        weekCell.appendChild(pnl);
+      }
+
+      const wlDiv = document.createElement('div');
+      wlDiv.className = 'cal-meta';
+      wlDiv.style.marginTop = '3px';
+      wlDiv.textContent = `${weekW}W ${weekL}L`;
+      weekCell.appendChild(wlDiv);
+
+      const badge = document.createElement('div');
+      badge.className = 'cal-badge';
+      badge.textContent = `${weekDays} day${weekDays !== 1 ? 's' : ''}`;
+      weekCell.appendChild(badge);
+    }
+    grid.appendChild(weekCell);
+  });
+}
+
+function calSelectDay(day, weekIdx) {
+  if (calSelectedDay === day && calSelectedWeek === null) {
+    calSelectedDay = null; calSelectedWeek = null; showCalTrades(null);
+  } else {
+    calSelectedDay = day; calSelectedWeek = null;
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    showCalTrades(trades.filter(t => t.date === dateStr), `Trades on ${dateStr}`);
+  }
+  renderCalendar();
+}
+
+function calSelectWeek(weekIdx, days) {
+  if (calSelectedWeek === weekIdx && calSelectedDay === null) {
+    calSelectedWeek = null; calSelectedDay = null; showCalTrades(null);
+  } else {
+    calSelectedWeek = weekIdx; calSelectedDay = null;
+    const dates = days.filter(d => d).map(d => `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`);
+    showCalTrades(trades.filter(t => dates.includes(t.date)), `Week ${weekIdx + 1}`);
+  }
+  renderCalendar();
+}
+
+function showCalTrades(ts, label) {
+  const section = document.getElementById('cal-trade-section');
+  const inner = document.getElementById('cal-trade-inner');
+  const lbl = document.getElementById('cal-trade-label');
+  if (!ts || ts.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  lbl.textContent = label + ' — ' + ts.length + ' trade' + (ts.length !== 1 ? 's' : '');
+  const sorted = [...ts].sort((a,b) => ((a.date||'')+'T'+(a.time||'00:00')) < ((b.date||'')+'T'+(b.time||'00:00')) ? -1 : 1);
+  const thS = 'text-align:left;font-size:9px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;padding:8px 12px;border-bottom:1px solid var(--border);font-family:var(--mono);background:var(--bg)';
+  const rows = sorted.map((t,i) => {
+    const v = rValue(t);
+    const rc = v>0?'var(--accent)':v<0?'var(--red)':'var(--muted)';
+    const tt = t.tradeType ? `<span class="rp rp-${t.tradeType==='SMR'?'SMR':'Cont'}">${t.tradeType}</span>` : '';
+    const dc = t.dollar>0?'var(--accent)':t.dollar<0?'var(--red)':'var(--muted)';
+    return `<tr class="clickable-row" onclick="openEdit(${t.id})">
+      <td class="mono" style="color:var(--muted)">${i+1}</td>
+      <td class="mono" style="font-size:11px">${t.date||'—'}</td>
+      <td class="mono" style="font-size:11px;color:var(--muted)">${t.time||'—'}</td>
+      <td><span class="rp rp-${t.dir}">${t.dir}</span></td>
+      <td><span class="rp rp-${t.type}">${t.type==='BE'?'BE':t.type==='W'?'Win':'Loss'}</span></td>
+      <td>${tt||'—'}</td>
+      <td class="mono" style="color:${rc};font-weight:500">${v>0?'+':''}${v.toFixed(2)}R</td>
+      <td class="mono" style="color:var(--muted)">${t.pts!=null?(t.pts>0?'+':'')+t.pts+' pts':'—'}</td>
+      <td class="mono" style="color:${dc}">${t.dollar!=null?(t.dollar>=0?'+':'')+'$'+Math.abs(t.dollar).toLocaleString():'—'}</td>
+      <td style="font-size:10px;color:var(--accent);font-family:var(--mono)">${Array.isArray(t.ssmtEntry)?t.ssmtEntry.join(', '):t.ssmtEntry||'—'}</td>
+      <td style="font-size:10px;color:var(--muted);font-family:var(--mono)">${t.fractal==='No fractal'?'No':t.fractal||'—'}</td>
+      <td style="font-size:10px;font-family:var(--mono);color:var(--muted)">${t.notes||''}</td>
+    </tr>`;
+  }).join('');
+  inner.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">
+    <thead><tr>
+      <th style="${thS}">#</th><th style="${thS}">Date</th><th style="${thS}">Time</th>
+      <th style="${thS}">Dir</th><th style="${thS}">Result</th><th style="${thS}">Type</th>
+      <th style="${thS}">R</th><th style="${thS}">Points</th><th style="${thS}">P&L</th>
+      <th style="${thS}">Entry SSMT</th><th style="${thS}">Fractal</th><th style="${thS}">Notes</th>
+    </tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+// ── DISCORD ──
+let discordSelectMode = false;
+function toggleDiscordSelect() {
+  discordSelectMode = !discordSelectMode;
+  const btn = document.getElementById('discord-export-btn');
+  const hint = document.getElementById('discord-hint');
+  if (discordSelectMode) { btn.textContent='Cancel'; btn.style.borderColor='var(--accent)'; btn.style.color='var(--accent)'; hint.style.display='inline'; }
+  else { btn.textContent='Export Discord'; btn.style.borderColor=''; btn.style.color=''; hint.style.display='none'; }
+}
+function copyTradeToDiscord(id) {
+  const t = trades.find(t => t.id === id); if (!t) return;
+  const result = t.type==='W' ? `+${t.r}R Win` : t.type==='L' ? '-1R Loss' : '0R Breakeven';
+  const entryConfs = (t.confs||[]).filter(c => ['1m CISD','15s CISD','10-point reaction'].includes(c));
+  const cracks = (t.confs||[]).filter(c => !['1m CISD','15s CISD','10-point reaction'].includes(c) && !c.startsWith('TxO'));
+  const ssmt = Array.isArray(t.ssmtEntry) ? t.ssmtEntry.join(', ') : (t.ssmtEntry||'—');
+  const lines = [
+    `Direction: ${t.dir} | Type: ${t.tradeType||'—'} | Result: ${result}`,
+    `Entry time: ${t.time||'—'} | Points: ${t.pts!=null?t.pts:'—'} | Stop: ${t.sl!=null?t.sl:'—'} pts`,
+    t.dollar!=null ? `P&L: ${t.dollar>=0?'+':''}$${t.dollar.toLocaleString()}` : null,
+    `Entry SSMT: ${ssmt}`,
+    cracks.length ? `Cracks: ${cracks.join(', ')}` : null,
+    entryConfs.length ? `Entry: ${entryConfs.join(', ')}` : null,
+    t.notes ? `Notes: ${t.notes}` : null,
+  ].filter(Boolean).join('\n');
+  const msg = `# 📊 Trade Review — ${t.date}\n\`\`\`\n${lines}\n\`\`\``;
+  navigator.clipboard.writeText(msg).then(() => {
+    const btn = document.getElementById('discord-export-btn');
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { discordSelectMode=false; btn.textContent='Export Discord'; btn.style.borderColor=''; btn.style.color=''; document.getElementById('discord-hint').style.display='none'; }, 2000);
+  });
+}
+function copyToDiscord() { copyTradeToDiscord(editingId); }
+
+// ── MIGRATE ──
+function migrateOldTrades() {
+  let changed = false;
+  trades.forEach(t => { if (!t.instrument) { t.instrument='NQ'; changed=true; } });
+  if (changed) saveToCloud();
+}
+
+// ensure main tab visible on load
+document.getElementById('statsBar').style.display = '';
+document.getElementById('chartWrap').style.display = '';
+document.getElementById('tableWrap').style.display = '';
+document.getElementById('journal-form-wrap').style.display = 'block';
+
 render();
 </script>
 <!-- EDIT / SWAP MODAL -->
@@ -1406,6 +1786,8 @@ render();
       <div class="field"><label>Direction</label><select id="m-dir"><option value="Long">Long</option><option value="Short">Short</option></select></div>
       <div class="field"><label>Points</label><input type="number" id="m-pts" step="0.25"></div>
       <div class="field"><label>Stop (pts)</label><input type="number" id="m-sl" step="0.25"></div>
+      <div class="field"><label>Instrument</label><select id="m-instrument"><option value="NQ">NQ</option><option value="BTC">BTC</option></select></div>
+      <div class="field"><label>P&L ($)</label><input type="number" id="m-dollar" step="0.01" placeholder="e.g. 500"></div>
     </div>
     <div class="modal-section">
       <div class="modal-section-label">Trade type</div>
@@ -1440,8 +1822,11 @@ render();
     <div class="modal-section">
       <div class="modal-section-label">Fractal</div>
       <div style="display:flex;gap:6px">
-        <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-yes" value="With fractal"><label class="pill-lbl" for="m-frac-yes">With fractal</label>
         <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-no" value="No fractal"><label class="pill-lbl" for="m-frac-no">No fractal</label>
+        <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-15m" value="15m fractal"><label class="pill-lbl" for="m-frac-15m">15m</label>
+        <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-1h" value="1h fractal"><label class="pill-lbl" for="m-frac-1h">1h</label>
+        <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-4h" value="4h fractal"><label class="pill-lbl" for="m-frac-4h">4h</label>
+        <input type="radio" class="pill-inp" name="m-fractal" onclick="toggleRadio(this)" id="m-frac-1d" value="1d fractal"><label class="pill-lbl" for="m-frac-1d">1d</label>
       </div>
     </div>
     <div class="modal-section">
@@ -1484,3 +1869,4 @@ render();
 
 </body>
 </html>
+
