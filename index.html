@@ -688,9 +688,9 @@
 </div>
 
 <script>
-const SUPABASE_URL = 'https://ceeravfkkcyfssbhohgn.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZXJhdmZra2N5ZnNzYmhvaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NjA2OTIsImV4cCI6MjA4OTUzNjY5Mn0.l0k5b7Jk2FVnh9JfBSkMEs1Hvo-WzpV0PspOoJt9myw';
-const DB_ID = 'global'; // single shared row storing all trades
+const SUPABASE_URL = 'https://ceeravfkkcyfssbhohgn.supabase.co'; // 🔧 Paste your Supabase project URL here
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNlZXJhdmZra2N5ZnNzYmhvaGduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5NjA2OTIsImV4cCI6MjA4OTUzNjY5Mn0.l0k5b7Jk2FVnh9JfBSkMEs1Hvo-WzpV0PspOoJt9myw'; // 🔧 Paste your Supabase anon/public key here
+const DB_ID = 'global'; // You can change this to any unique string — it's the row ID in your Supabase 'trades' table
 
 let trades = [];
 let _syncing = false; // kept for compat but no longer blocks saves
@@ -1369,7 +1369,7 @@ function confirmDelete(id) {
 }
 
 // ── PASSWORD ──
-const CORRECT_PW = 'bullishflag';
+const CORRECT_PW = 'bullishflag'; // 🔧 Set your password here
 
 function checkPw() {
   const val = document.getElementById('pw-input').value;
