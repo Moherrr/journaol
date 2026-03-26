@@ -461,6 +461,50 @@
 
 
 
+  /* ── LIGHTBOX ── */
+  #lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.92);
+    z-index: 9000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    padding: 24px;
+    backdrop-filter: blur(6px);
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 8px;
+    box-shadow: 0 32px 80px rgba(0,0,0,.6);
+    object-fit: contain;
+    pointer-events: none;
+    animation: lbIn .18s ease;
+  }
+  #lightbox-close {
+    position: fixed;
+    top: 16px;
+    right: 20px;
+    background: rgba(255,255,255,.12);
+    border: none;
+    color: white;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background .12s;
+  }
+  #lightbox-close:hover { background: rgba(255,255,255,.22); }
+  @keyframes lbIn { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
+
   ::-webkit-scrollbar { width: 4px; height: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
@@ -654,7 +698,7 @@
         </div>
         <input type="file" id="f-screenshot-input" accept="image/*" style="display:none" onchange="handleScreenshotFile(event,'f')">
         <div id="f-screenshot-preview" style="display:none;margin-top:12px;position:relative">
-          <img id="f-screenshot-img" style="width:100%;border-radius:8px;border:1px solid var(--border);display:block" alt="Trade screenshot">
+          <img id="f-screenshot-img" style="width:100%;border-radius:8px;border:1px solid var(--border);display:block;cursor:zoom-in" onclick="if(this.src)openLightbox(this.src)" alt="Trade screenshot">
           <button onclick="clearScreenshot('f')" style="position:absolute;top:8px;right:8px;background:rgba(26,24,20,.7);border:none;color:white;border-radius:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;cursor:pointer">Remove</button>
         </div>
       </div>
@@ -1813,6 +1857,18 @@ function readScreenshotFile(file, prefix) {
   };
   reader.readAsDataURL(file);
 }
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+  document.addEventListener('keydown', _lbKeyHandler);
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
+  document.removeEventListener('keydown', _lbKeyHandler);
+}
+function _lbKeyHandler(e) { if (e.key === 'Escape') closeLightbox(); }
+
 function clearScreenshot(prefix) {
   if (prefix === 'f') window._fScreenshot = null;
   else window._mScreenshot = undefined;
@@ -1918,7 +1974,7 @@ render();
       </div>
       <input type="file" id="m-screenshot-input" accept="image/*" style="display:none" onchange="handleScreenshotFile(event,'m')">
       <div id="m-screenshot-preview" style="display:none;margin-top:10px;position:relative">
-        <img id="m-screenshot-img" style="width:100%;border-radius:8px;border:1px solid var(--border);display:block" alt="Trade screenshot">
+        <img id="m-screenshot-img" style="width:100%;border-radius:8px;border:1px solid var(--border);display:block;cursor:zoom-in" onclick="if(this.src)openLightbox(this.src)" alt="Trade screenshot">
         <button onclick="clearScreenshot('m')" style="position:absolute;top:8px;right:8px;background:rgba(26,24,20,.7);border:none;color:white;border-radius:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;cursor:pointer">Remove</button>
       </div>
     </div>
@@ -1942,6 +1998,12 @@ render();
   <button onclick="exportJSON()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Export JSON</button>
   <button onclick="document.getElementById('importFile').click()" style="font-family:var(--mono);font-size:10px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;color:var(--muted);padding:5px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08)">Import JSON</button>
   <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="Screenshot fullscreen">
 </div>
 
 </body>
