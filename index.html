@@ -614,6 +614,7 @@
       <button class="tab-btn active" onclick="switchTab('confs',this)">Confluences</button>
       <button class="tab-btn" onclick="switchTab('trade-type',this)">Trade type</button>
       <button class="tab-btn" onclick="switchTab('notes',this)">Notes</button>
+      <button class="tab-btn" onclick="switchTab('screenshot',this)">Screenshot</button>
     </div>
 
     <!-- TAB: Confluences -->
@@ -640,6 +641,22 @@
       <div class="field" style="margin-top:4px">
         <label>Notes</label>
         <textarea id="f-notes" placeholder="What happened, why you took it, what you noticed..."></textarea>
+      </div>
+    </div>
+
+    <!-- TAB: Screenshot -->
+    <div class="tab-panel" id="tab-screenshot">
+      <div style="margin-top:4px">
+        <div id="f-screenshot-drop" onclick="document.getElementById('f-screenshot-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor=''" ondrop="handleScreenshotDrop(event,'f')" style="border:1.5px dashed var(--border2);border-radius:10px;padding:28px 20px;text-align:center;cursor:pointer;color:var(--muted);font-family:var(--mono);font-size:12px;transition:border-color .15s;background:var(--bg3)">
+          <div style="font-size:22px;margin-bottom:8px;opacity:.4">📷</div>
+          <div>Click or drag & drop a screenshot</div>
+          <div style="font-size:10px;margin-top:4px;color:var(--faint)">PNG, JPG, WEBP — stored locally in your journal</div>
+        </div>
+        <input type="file" id="f-screenshot-input" accept="image/*" style="display:none" onchange="handleScreenshotFile(event,'f')">
+        <div id="f-screenshot-preview" style="display:none;margin-top:12px;position:relative">
+          <img id="f-screenshot-img" style="width:100%;border-radius:8px;border:1px solid var(--border);display:block" alt="Trade screenshot">
+          <button onclick="clearScreenshot('f')" style="position:absolute;top:8px;right:8px;background:rgba(26,24,20,.7);border:none;color:white;border-radius:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;cursor:pointer">Remove</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1043,6 +1060,7 @@ function addTrade() {
     notes:      document.getElementById('f-notes').value.trim(),
     instrument: document.getElementById('f-instrument').value,
     dollar:     parseFloat(document.getElementById('f-dollar').value) || null,
+    screenshot: window._fScreenshot || null,
   });
   save(); render(); resetForm();
 }
@@ -1068,6 +1086,7 @@ function resetForm() {
   document.querySelectorAll('input[name="txo"]').forEach(e => e.checked = false);
   const txoW = document.getElementById('txo-wrap');
   if (txoW) txoW.style.display = 'none';
+  clearScreenshot('f');
 }
 
 function save() {
@@ -1322,6 +1341,7 @@ function render() {
             style="background:transparent;border:1px solid rgba(192,57,43,.25);border-radius:5px;color:var(--red);font-size:11px;padding:2px 8px;cursor:pointer;font-family:var(--mono)"
             onmouseover="this.style.background='rgba(192,57,43,.08)'"
             onmouseout="this.style.background='transparent'">✕</button>
+          ${t.screenshot ? `<span title="Has screenshot" style="margin-left:4px;font-size:12px;opacity:.6;cursor:pointer" onclick="event.stopPropagation();openEdit(${t.id})">📷</span>` : ''}
         </td>
       </tr>`;
     }).join('');
@@ -1372,6 +1392,14 @@ function openEdit(id) {
   document.querySelectorAll('input[name="m-entry"]').forEach(r => r.checked = confVals.includes(r.value));
 
   document.getElementById('editModal').style.display = 'flex';
+  // screenshot
+  clearScreenshot('m');
+  if (t.screenshot) {
+    window._mScreenshot = t.screenshot;
+    document.getElementById('m-screenshot-img').src = t.screenshot;
+    document.getElementById('m-screenshot-preview').style.display = 'block';
+    document.getElementById('m-screenshot-drop').style.display = 'none';
+  }
 }
 
 function closeModal() {
@@ -1418,6 +1446,7 @@ function saveModal() {
     ssmtEntry: mSsmtEntry,
     ssmtActive: mSsmtActive,
     confs: mConfs,
+    screenshot: window._mScreenshot !== undefined ? window._mScreenshot : (trades[idx].screenshot || null),
   };
   save(); render(); closeModal();
 }
@@ -1759,6 +1788,42 @@ function copyTradeToDiscord(id) {
 }
 function copyToDiscord() { copyTradeToDiscord(editingId); }
 
+// ── SCREENSHOTS ──
+function handleScreenshotFile(event, prefix) {
+  const file = event.target.files[0];
+  if (!file) return;
+  readScreenshotFile(file, prefix);
+  event.target.value = '';
+}
+function handleScreenshotDrop(event, prefix) {
+  event.preventDefault();
+  document.getElementById(prefix+'-screenshot-drop').style.borderColor = '';
+  const file = event.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) readScreenshotFile(file, prefix);
+}
+function readScreenshotFile(file, prefix) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    if (prefix === 'f') window._fScreenshot = data;
+    else window._mScreenshot = data;
+    document.getElementById(prefix+'-screenshot-img').src = data;
+    document.getElementById(prefix+'-screenshot-preview').style.display = 'block';
+    document.getElementById(prefix+'-screenshot-drop').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+function clearScreenshot(prefix) {
+  if (prefix === 'f') window._fScreenshot = null;
+  else window._mScreenshot = undefined;
+  const prev = document.getElementById(prefix+'-screenshot-preview');
+  const drop = document.getElementById(prefix+'-screenshot-drop');
+  const img = document.getElementById(prefix+'-screenshot-img');
+  if (prev) { prev.style.display = 'none'; }
+  if (drop) { drop.style.display = ''; }
+  if (img) img.src = '';
+}
+
 // ── MIGRATE ──
 function migrateOldTrades() {
   let changed = false;
@@ -1846,6 +1911,18 @@ render();
       <div class="pill-group" style="gap:5px"><input type="checkbox" class="pill-inp" name="m-entry" id="m-en-1m_CISD" value="1m CISD"><label class="pill-lbl" for="m-en-1m_CISD">1m CISD</label><input type="checkbox" class="pill-inp" name="m-entry" id="m-en-15s_CISD" value="15s CISD"><label class="pill-lbl" for="m-en-15s_CISD">15s CISD</label><input type="checkbox" class="pill-inp" name="m-entry" id="m-en-10-point_reaction" value="10-point reaction"><label class="pill-lbl" for="m-en-10-point_reaction">10-point reaction</label></div>
     </div>
     <div class="modal-section">
+      <div class="modal-section-label">Screenshot</div>
+      <div id="m-screenshot-drop" onclick="document.getElementById('m-screenshot-input').click()" ondragover="event.preventDefault();this.style.borderColor='var(--accent)'" ondragleave="this.style.borderColor=''" ondrop="handleScreenshotDrop(event,'m')" style="border:1.5px dashed var(--border2);border-radius:10px;padding:18px;text-align:center;cursor:pointer;color:var(--muted);font-family:var(--mono);font-size:11px;transition:border-color .15s;background:var(--bg3)">
+        <div style="font-size:18px;margin-bottom:6px;opacity:.4">📷</div>
+        <div>Click or drag & drop to add/replace screenshot</div>
+      </div>
+      <input type="file" id="m-screenshot-input" accept="image/*" style="display:none" onchange="handleScreenshotFile(event,'m')">
+      <div id="m-screenshot-preview" style="display:none;margin-top:10px;position:relative">
+        <img id="m-screenshot-img" style="width:100%;border-radius:8px;border:1px solid var(--border);display:block" alt="Trade screenshot">
+        <button onclick="clearScreenshot('m')" style="position:absolute;top:8px;right:8px;background:rgba(26,24,20,.7);border:none;color:white;border-radius:6px;font-family:var(--mono);font-size:11px;padding:4px 10px;cursor:pointer">Remove</button>
+      </div>
+    </div>
+    <div class="modal-section">
       <div class="modal-section-label">Notes</div>
       <textarea id="m-notes" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:var(--sans);font-size:13px;padding:8px 10px;outline:none;resize:vertical;min-height:60px"></textarea>
     </div>
@@ -1869,4 +1946,3 @@ render();
 
 </body>
 </html>
-
